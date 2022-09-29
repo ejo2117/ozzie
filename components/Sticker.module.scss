@@ -1,0 +1,13 @@
+.container {
+	padding: 56px 44px;
+	clip-path: ellipse(100px 80px);
+
+	@media (prefers-color-scheme: light) {
+		background-color: $black;
+		color: $white;
+	}
+	@media (prefers-color-scheme: dark) {
+		background-color: $white;
+		color: $black;
+	}
+}
