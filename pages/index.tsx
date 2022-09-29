@@ -1,6 +1,7 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
+import Sticker from '../components/Sticker';
 import styles from '../styles/Home.module.css';
 
 const Home: NextPage = () => {
@@ -28,7 +29,11 @@ const Home: NextPage = () => {
 			</Head>
 
 			<main className={styles.main}>
-				<h1>Mezcal.</h1>
+				<Sticker>
+					<h1>
+						<i>Mezcal.</i>
+					</h1>
+				</Sticker>
 			</main>
 		</div>
 	);
