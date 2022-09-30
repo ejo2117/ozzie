@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Sticker from '../components/Sticker';
 import styles from '../styles/Home.module.css';
 
+// basic commit
 const Home: NextPage = () => {
 	return (
 		<div className={styles.container}>
