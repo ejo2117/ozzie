@@ -2,6 +2,10 @@ import React, { useRef, useMemo, useCallback, useEffect, useState } from 'react'
 import * as d3 from 'd3';
 import VectorField from './VectorField/VectorField';
 
+const randomInt = (max = 1) => {
+	return Math.floor(Math.random() * max);
+};
+
 const Chart = () => {
 	const [data, setData] = useState(null);
 
@@ -23,15 +27,16 @@ const Chart = () => {
 	};
 
 	const oscillate = (data, factor) => {
-		console.log('changing data..');
 		return data
 			? data.map((d, i) => {
-					if (!i) {
-						console.log(d);
-					}
 					return {
 						...d,
-						...{ dir: Math.round((parseFloat(d.dir) + factor).toFixed(2)) },
+						...{
+							dir: Math.round(
+								(parseFloat(d.dir) + factor * 0.1).toFixed(2)
+							),
+							speed: randomInt(10),
+						},
 					};
 			  })
 			: [];
@@ -55,8 +60,6 @@ const Chart = () => {
 			cancelAnimationFrame(requestRef.current);
 		};
 	}, [data]);
-
-	data && console.log('parent render w ', data[0]);
 
 	return data ? (
 		<>

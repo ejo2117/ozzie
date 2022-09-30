@@ -95,12 +95,10 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 };
 
 const VectorField: FC<Omit<IVectorFieldProps, 'height'>> = props => {
-	console.log('render w', props.data[0]);
 	const hasMounted = useHasMounted();
 
 	const canvasRef = useCallback(
 		(node: HTMLCanvasElement) => {
-			console.log('drawing? ', hasMounted);
 			if (hasMounted) {
 				draw(node, props);
 			}
