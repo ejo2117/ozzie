@@ -28,14 +28,7 @@ interface IVectorFieldProps {
 const getVectorFieldHeight = (props: Omit<IVectorFieldProps, 'height'>) => {
 	const { d3, data, projection, width, margin } = props;
 
-	console.log('DAAT', data);
-
 	const points = { type: 'MultiPoint', coordinates: data?.map(d => [d.longitude, d.latitude]) };
-
-	console.log(points);
-	console.log(width - margin * 2);
-
-	// console.log('[PROJeCtion]: ', projection.fitWidth);
 
 	const [[x0, y0], [x1, y1]] = d3
 		.geoPath(projection.fitWidth(width - margin * 2, points))
@@ -59,56 +52,63 @@ const color = (dir, d3) => {
 	return d3.scaleSequential([0, 360], d3.interpolateRainbow)(dir);
 };
 
-const VectorField: FC<Omit<IVectorFieldProps, 'height'>> = props => {
+const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>) => {
 	const { d3, data, width, projection } = props;
+	if (node) {
+		const canvas = node;
+		// Get height based on data
+		const height = getVectorFieldHeight(props);
 
-	const canvasRef = useCallback(node => {
-		if (node) {
-			const canvas = node;
-			// Get height based on data
-			const height = getVectorFieldHeight(props);
+		// Fixes blurriness on Retina Displays
+		const dpi = window.devicePixelRatio;
+		canvas.width = Math.floor(width * dpi);
+		canvas.height = Math.floor(height * dpi);
 
-			// Fixes blurriness on Retina Displays
-			const dpi = window.devicePixelRatio;
-			canvas.width = Math.floor(width * dpi);
-			canvas.height = Math.floor(height * dpi);
+		const context = canvas.getContext('2d');
+		const path = d3.geoPath(projection, context);
 
-			const context = canvas.getContext('2d');
-			const path = d3.geoPath(projection, context);
+		if (context) {
+			context.canvas.style.maxWidth = '100%';
+			context.scale(dpi, dpi);
+			context.fillRect(0, 0, width, height);
+			context.strokeStyle = '#eee';
+			context.lineWidth = 1.5;
+			context.lineJoin = 'round';
 
-			if (context) {
-				context.canvas.style.maxWidth = '100%';
-				context.scale(dpi, dpi);
-				context.fillRect(0, 0, width, height);
-				context.strokeStyle = '#eee';
-				context.lineWidth = 1.5;
-				context.lineJoin = 'round';
+			for (const { longitude, latitude, speed, dir } of data) {
+				context.save();
+				context.translate(...projection([longitude, latitude]));
+				context.scale(scale(data, d3), scale(data, d3));
+				context.rotate((dir * Math.PI) / 180);
 
-				for (const { longitude, latitude, speed, dir } of data) {
-					context.save();
-					context.translate(...projection([longitude, latitude]));
-					context.scale(scale(data, d3), scale(data, d3));
-					context.rotate((dir * Math.PI) / 180);
+				context.beginPath();
+				context.moveTo(-2, -2);
+				context.lineTo(2, -2);
+				context.lineTo(0, 8);
+				context.closePath();
 
-					context.beginPath();
-					context.moveTo(-2, -2);
-					context.lineTo(2, -2);
-					context.lineTo(0, 8);
-					context.closePath();
+				context.fillStyle = color(dir, d3);
+				context.fill();
 
-					console.log(color(dir, d3));
-					context.fillStyle = color(dir, d3);
-					console.log(context);
-					context.fill();
-
-					context.restore();
-				}
+				context.restore();
 			}
 		}
-	}, []);
+	}
+};
 
+const VectorField: FC<Omit<IVectorFieldProps, 'height'>> = props => {
+	console.log('render w', props.data[0]);
 	const hasMounted = useHasMounted();
-	if (!hasMounted) return null;
+
+	const canvasRef = useCallback(
+		(node: HTMLCanvasElement) => {
+			console.log('drawing? ', hasMounted);
+			if (hasMounted) {
+				draw(node, props);
+			}
+		},
+		[props.data]
+	);
 
 	return <canvas ref={canvasRef}></canvas>;
 };

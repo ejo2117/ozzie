@@ -4,7 +4,20 @@ import VectorField from './VectorField/VectorField';
 
 const Chart = () => {
 	const [data, setData] = useState(null);
-	const canvas = useRef(null);
+	const [transformed, setTransformed] = useState(null);
+
+	const osicllate = data => {
+		console.log('funking..');
+
+		return data
+			? data.map((d, i) => {
+					if (!i) {
+						console.log(d);
+					}
+					return { ...d, ...{ dir: (parseFloat(d.dir) + 80).toFixed(2) } };
+			  })
+			: [];
+	};
 
 	// Fetch data to visualize, then cache
 	useEffect(() => {
@@ -15,24 +28,36 @@ const Chart = () => {
 		fetchData();
 	}, []);
 
-	// // Make sure visualize function doesn't run more than it needs to
-	// const drawOn = useCallback(canvas => {}, [data]);
+	// Transform existing data
+	useEffect(() => {
+		if (transformed) {
+			setTransformed(osicllate(transformed));
+		}
+		if (data) {
+			console.log('dsawd', osicllate(data));
+			setTransformed(osicllate(data));
+		}
+	}, [data]);
 
-	// // Visualize data in the DOM once the container element is available
-	// useEffect(() => {
-	// 	drawOn(canvas);
-	// }, [canvas]);
+	data && console.log('parent render w ', data[0]);
 
-	return data ? (
-		<div id='chart'>
-			<VectorField
-				d3={d3}
-				width={975}
-				margin={10}
-				data={data}
-				projection={d3.geoEquirectangular()}
-			></VectorField>
-		</div>
+	const handleClick = () => {
+		setTransformed(osicllate(transformed));
+	};
+
+	return transformed ? (
+		<>
+			<button onClick={handleClick}>Click me</button>
+			<div id='chart'>
+				<VectorField
+					d3={d3}
+					width={975}
+					margin={10}
+					data={transformed}
+					projection={d3.geoEquirectangular()}
+				></VectorField>
+			</div>
+		</>
 	) : null;
 };
 
