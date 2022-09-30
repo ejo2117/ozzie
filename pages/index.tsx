@@ -1,9 +1,11 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
+import Chart from '../components/Chart/Chart';
 import Sticker from '../components/Sticker';
 import styles from '../styles/Home.module.css';
 
+// basic commit
 const Home: NextPage = () => {
 	return (
 		<div className={styles.container}>
@@ -34,6 +36,7 @@ const Home: NextPage = () => {
 						<i>Mezcal.</i>
 					</h1>
 				</Sticker>
+				<Chart />
 			</main>
 		</div>
 	);
