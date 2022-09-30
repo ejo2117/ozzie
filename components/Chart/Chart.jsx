@@ -4,17 +4,35 @@ import VectorField from './VectorField/VectorField';
 
 const Chart = () => {
 	const [data, setData] = useState(null);
-	const [transformed, setTransformed] = useState(null);
 
-	const osicllate = data => {
-		console.log('funking..');
+	const requestRef = useRef();
+	const previousTimeRef = useRef();
 
+	const animate = time => {
+		if (!data) return;
+
+		if (previousTimeRef.current != undefined) {
+			const deltaTime = time - previousTimeRef.current;
+
+			// pass a function to setData, generating new state based off latest state
+			setData(prevData => oscillate(prevData, deltaTime));
+		}
+
+		previousTimeRef.current = time;
+		requestRef.current = requestAnimationFrame(animate);
+	};
+
+	const oscillate = (data, factor) => {
+		console.log('changing data..');
 		return data
 			? data.map((d, i) => {
 					if (!i) {
 						console.log(d);
 					}
-					return { ...d, ...{ dir: (parseFloat(d.dir) + 80).toFixed(2) } };
+					return {
+						...d,
+						...{ dir: Math.round((parseFloat(d.dir) + factor).toFixed(2)) },
+					};
 			  })
 			: [];
 	};
@@ -28,32 +46,26 @@ const Chart = () => {
 		fetchData();
 	}, []);
 
-	// Transform existing data
 	useEffect(() => {
-		if (transformed) {
-			setTransformed(osicllate(transformed));
-		}
 		if (data) {
-			console.log('dsawd', osicllate(data));
-			setTransformed(osicllate(data));
+			requestRef.current = requestAnimationFrame(animate);
 		}
+
+		return () => {
+			cancelAnimationFrame(requestRef.current);
+		};
 	}, [data]);
 
 	data && console.log('parent render w ', data[0]);
 
-	const handleClick = () => {
-		setTransformed(osicllate(transformed));
-	};
-
-	return transformed ? (
+	return data ? (
 		<>
-			<button onClick={handleClick}>Click me</button>
 			<div id='chart'>
 				<VectorField
 					d3={d3}
 					width={975}
 					margin={10}
-					data={transformed}
+					data={data}
 					projection={d3.geoEquirectangular()}
 				></VectorField>
 			</div>

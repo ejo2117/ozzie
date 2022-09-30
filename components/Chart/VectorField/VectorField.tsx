@@ -47,8 +47,6 @@ const scale = (data: any[], d3) => {
 };
 
 const color = (dir, d3) => {
-	// console.log('[COLOR 0]:', d3.scaleSequential([0, 360], d3.interpolateRainbow));
-
 	return d3.scaleSequential([0, 360], d3.interpolateRainbow)(dir);
 };
 
@@ -71,7 +69,7 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 			context.canvas.style.maxWidth = '100%';
 			context.scale(dpi, dpi);
 			context.fillRect(0, 0, width, height);
-			context.strokeStyle = '#eee';
+			context.strokeStyle = '#000';
 			context.lineWidth = 1.5;
 			context.lineJoin = 'round';
 
@@ -79,12 +77,12 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 				context.save();
 				context.translate(...projection([longitude, latitude]));
 				context.scale(scale(data, d3), scale(data, d3));
-				context.rotate((dir * Math.PI) / 180);
+				context.rotate(Math.floor((dir * Math.PI) / 180));
 
 				context.beginPath();
 				context.moveTo(-2, -2);
 				context.lineTo(2, -2);
-				context.lineTo(0, 8);
+				context.lineTo(0, 5);
 				context.closePath();
 
 				context.fillStyle = color(dir, d3);
