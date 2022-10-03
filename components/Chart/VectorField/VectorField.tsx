@@ -1,9 +1,9 @@
-// @ts-nocheck
 // D3 Types are crazy
 import type { GeoProjection } from 'd3';
 import { FC, useCallback, useEffect, useRef } from 'react';
 
 import useHasMounted from '../../../hooks/useHasMounted';
+import { randomInt, PI } from '../../../utils/math';
 
 interface IDataFormat {
 	// point: [x: number, y: number];
@@ -12,6 +12,12 @@ interface IDataFormat {
 	dir: number;
 	dirCat: number;
 	speed: number;
+}
+
+interface ISprite {
+	move: ReturnType<typeof generateLissajous>;
+	created: number;
+	render: (pos: { x: number; y: number }) => void;
 }
 
 interface IVectorFieldProps {
@@ -26,6 +32,29 @@ interface IVectorFieldProps {
 	scale: () => void;
 	color: () => void;
 }
+
+const generateLissajous = (dx: number, dy: number, tx: number, ty: number) => {
+	// TODO implement our oscillation
+	return t => {
+		return {
+			x: 150 + dx * Math.sin(tx * t),
+			y: 75 + dy * Math.cos(ty * t),
+		};
+	};
+};
+
+const generateRenderer = (d3, context: CanvasRenderingContext2D, dir) => {
+	return (pos: { x: number; y: number }) => {
+		context.beginPath();
+		context.moveTo(pos.x - 2, pos.y - 2);
+		context.lineTo(pos.x + 2, pos.y - 2);
+		context.lineTo(pos.x, pos.y + 5);
+		context.closePath();
+
+		context.fillStyle = color(pos.x + pos.y, d3);
+		context.fill();
+	};
+};
 
 const getVectorFieldHeight = (props: Omit<IVectorFieldProps, 'height'>) => {
 	const { d3, data, projection, width, margin } = props;
@@ -44,12 +73,63 @@ const getVectorFieldHeight = (props: Omit<IVectorFieldProps, 'height'>) => {
 	return height + margin * 2;
 };
 
-const scale = (data: any[], d3) => {
-	return d3.scaleSqrt([0, d3.max(data, d => d.speed)], [0, 2]);
+const scale = (
+	data: any[],
+	d3: {
+		scaleSqrt: (arg0: any[], arg1: number[]) => any;
+		max: (arg0: any[], arg1: (d: any) => any) => any;
+	}
+) => {
+	return d3.scaleSqrt([0, d3.max(data, (d: { speed: any }) => d.speed)], [0, 2]);
 };
 
-const color = (dir, d3) => {
+const color = (
+	dir: any,
+	d3: {
+		scaleSequential: (arg0: number[], arg1: any) => { (arg0: any): any; new (): any };
+		interpolateRainbow: any;
+	}
+) => {
 	return d3.scaleSequential([0, 360], d3.interpolateRainbow)(dir);
+};
+
+const generateSprites = (
+	d3,
+	context: CanvasRenderingContext2D,
+	data: IDataFormat[],
+	projection: GeoProjection
+) => {
+	let sprites = [] as ISprite[];
+
+	// define a movement behavior, a creation timestamp, and a renderer for every data point
+	for (const { longitude, latitude, speed, dir } of data) {
+		const normalizedPoint = projection([longitude, latitude]) as [number, number];
+
+		sprites.push({
+			move: generateLissajous(
+				normalizedPoint[0],
+				normalizedPoint[1],
+				randomInt(100),
+				randomInt(100)
+			),
+			created: performance.now(),
+			render: generateRenderer(d3, context, dir),
+		});
+	}
+
+	return sprites;
+};
+
+const update = (context: CanvasRenderingContext2D, sprites: ISprite[], width, height) => {
+	let now, sprite;
+
+	now = performance.now();
+
+	for (sprite of sprites) {
+		sprite.render(sprite.move((now - sprite.created) / 1000));
+	}
+
+	window.requestAnimationFrame(() => update(context, sprites, width, height));
 };
 
 const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>) => {
@@ -64,35 +144,36 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 		canvas.width = Math.floor(width * dpi);
 		canvas.height = Math.floor(height * dpi);
 
-		const context = canvas.getContext('2d');
-		const path = d3.geoPath(projection, context);
+		const context = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-		if (context) {
-			context.canvas.style.maxWidth = '100%';
-			context.scale(dpi, dpi);
-			context.fillRect(0, 0, width, height);
-			context.strokeStyle = '#000';
-			context.lineWidth = 1.5;
-			context.lineJoin = 'round';
+		const sprites = generateSprites(d3, context, data, projection);
 
-			for (const { longitude, latitude, speed, dir } of data) {
-				context.save();
-				context.translate(...projection([longitude, latitude]));
-				context.scale(scale(data, d3), scale(data, d3));
-				context.rotate(Math.floor((dir * Math.PI) / 180));
+		context.canvas.style.maxWidth = '100%';
+		context.scale(dpi, dpi);
+		context.fillRect(0, 0, width, height);
+		context.strokeStyle = '#000';
+		context.lineWidth = 1.5;
+		context.lineJoin = 'round';
 
-				context.beginPath();
-				context.moveTo(-2, -2);
-				context.lineTo(2, -2);
-				context.lineTo(0, 5);
-				context.closePath();
+		window.requestAnimationFrame(() => update(context, sprites, width, height));
 
-				context.fillStyle = color(dir, d3);
-				context.fill();
+		// for (const { longitude, latitude, speed, dir } of data) {
+		// 	context.save();
+		// 	context.translate(...projection([longitude, latitude]));
+		// 	context.scale(scale(data, d3), scale(data, d3));
+		// 	context.rotate(Math.floor((dir * Math.PI) / 180));
 
-				context.restore();
-			}
-		}
+		// 	context.beginPath();
+		// 	context.moveTo(-2, -2);
+		// 	context.lineTo(2, -2);
+		// 	context.lineTo(0, 5);
+		// 	context.closePath();
+
+		// 	context.fillStyle = color(dir, d3);
+		// 	context.fill();
+
+		// 	context.restore();
+		// }
 	}
 };
 
@@ -102,6 +183,8 @@ const VectorField: FC<Omit<IVectorFieldProps, 'height'>> = props => {
 	const canvasRef = useCallback(
 		(node: HTMLCanvasElement) => {
 			if (hasMounted) {
+				console.log('begin drawing');
+
 				draw(node, props);
 			}
 		},

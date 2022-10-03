@@ -1,10 +1,7 @@
 import React, { useRef, useMemo, useCallback, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import VectorField from './VectorField/VectorField';
-
-const randomInt = (max = 1) => {
-	return Math.floor(Math.random() * max);
-};
+import { randomInt } from '../../utils/math';
 
 const Chart = () => {
 	const [data, setData] = useState(null);
@@ -51,15 +48,15 @@ const Chart = () => {
 		fetchData();
 	}, []);
 
-	useEffect(() => {
-		if (data) {
-			requestRef.current = requestAnimationFrame(animate);
-		}
+	// useEffect(() => {
+	// 	if (data) {
+	// 		requestRef.current = requestAnimationFrame(animate);
+	// 	}
 
-		return () => {
-			cancelAnimationFrame(requestRef.current);
-		};
-	}, [data]);
+	// 	return () => {
+	// 		cancelAnimationFrame(requestRef.current);
+	// 	};
+	// }, [data]);
 
 	return data ? (
 		<>
