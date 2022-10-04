@@ -43,7 +43,7 @@ const Chart = () => {
 	useEffect(() => {
 		const fetchData = async () => {
 			const csv = await d3.csv('./wind.csv');
-			setData(csv);
+			setData(csv.slice(0, csv.length / 1200));
 		};
 		fetchData();
 	}, []);

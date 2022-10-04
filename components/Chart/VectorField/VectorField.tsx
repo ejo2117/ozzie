@@ -37,22 +37,29 @@ const generateLissajous = (dx: number, dy: number, tx: number, ty: number) => {
 	// TODO implement our oscillation
 	return t => {
 		return {
-			x: 150 + dx * Math.sin(tx * t),
-			y: 75 + dy * Math.cos(ty * t),
+			x: window.innerWidth / 2 + dx * Math.sin(tx * t),
+			y: window.innerHeight / 2 + dy * Math.cos(ty * t),
 		};
 	};
 };
 
 const generateRenderer = (d3, context: CanvasRenderingContext2D, dir) => {
+	// ! need to pass different values in here –– we want our shapes to rotate and scale, but they should have a fixed origin
 	return (pos: { x: number; y: number }) => {
+		// context.translate(point[0], point[1]);
+		// context.scale(scale(data, d3), scale(data, d3));
+		// context.rotate(Math.floor((dir * PI) / 180));
+
 		context.beginPath();
 		context.moveTo(pos.x - 2, pos.y - 2);
 		context.lineTo(pos.x + 2, pos.y - 2);
 		context.lineTo(pos.x, pos.y + 5);
 		context.closePath();
 
-		context.fillStyle = color(pos.x + pos.y, d3);
+		context.fillStyle = color(dir, d3);
 		context.fill();
+
+		// context.restore();
 	};
 };
 
@@ -106,12 +113,7 @@ const generateSprites = (
 		const normalizedPoint = projection([longitude, latitude]) as [number, number];
 
 		sprites.push({
-			move: generateLissajous(
-				normalizedPoint[0],
-				normalizedPoint[1],
-				randomInt(100),
-				randomInt(100)
-			),
+			move: generateLissajous(normalizedPoint[0], normalizedPoint[1], 1, 5),
 			created: performance.now(),
 			render: generateRenderer(d3, context, dir),
 		});
@@ -125,6 +127,11 @@ const update = (context: CanvasRenderingContext2D, sprites: ISprite[], width, he
 
 	now = performance.now();
 
+	// "wipe" canvas on each iteration
+
+	// context.fillStyle = '#000';
+	// context.fillRect(0, 0, width, height);
+
 	for (sprite of sprites) {
 		sprite.render(sprite.move((now - sprite.created) / 1000));
 	}
@@ -133,11 +140,14 @@ const update = (context: CanvasRenderingContext2D, sprites: ISprite[], width, he
 };
 
 const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>) => {
-	const { d3, data, width, projection } = props;
+	const { d3, data, projection } = props;
+
+	const width = window.innerWidth;
+
 	if (node) {
 		const canvas = node;
 		// Get height based on data
-		const height = getVectorFieldHeight(props);
+		const height = window.innerHeight || getVectorFieldHeight(props);
 
 		// Fixes blurriness on Retina Displays
 		const dpi = window.devicePixelRatio;
@@ -154,6 +164,8 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 		context.strokeStyle = '#000';
 		context.lineWidth = 1.5;
 		context.lineJoin = 'round';
+
+		context.save();
 
 		window.requestAnimationFrame(() => update(context, sprites, width, height));
 
