@@ -1,3 +1,4 @@
+// @ts-nocheck
 // D3 Types are crazy
 import type { GeoProjection } from 'd3';
 import { FC, useCallback, useEffect, useRef } from 'react';
