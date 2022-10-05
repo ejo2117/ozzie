@@ -5,6 +5,8 @@ import { FC, useCallback, useEffect, useRef } from 'react';
 import useHasMounted from '../../../hooks/useHasMounted';
 import { randomInt, PI } from '../../../utils/math';
 
+import styles from '../Chart.module.scss';
+
 interface IDataFormat {
 	// point: [x: number, y: number];
 	longitude: number;
@@ -43,23 +45,23 @@ const generateLissajous = (dx: number, dy: number, tx: number, ty: number) => {
 	};
 };
 
-const generateRenderer = (d3, context: CanvasRenderingContext2D, dir) => {
+const generateRenderer = (d3, context: CanvasRenderingContext2D, dir, normalizedPoint, data) => {
 	// ! need to pass different values in here –– we want our shapes to rotate and scale, but they should have a fixed origin
 	return (pos: { x: number; y: number }) => {
-		// context.translate(point[0], point[1]);
-		// context.scale(scale(data, d3), scale(data, d3));
-		// context.rotate(Math.floor((dir * PI) / 180));
+		context.translate(normalizedPoint[0], normalizedPoint[1]);
+		context.scale(scale(data, d3), scale(data, d3));
+		context.rotate(Math.floor((dir * PI) / 180));
 
 		context.beginPath();
-		context.moveTo(pos.x - 2, pos.y - 2);
-		context.lineTo(pos.x + 2, pos.y - 2);
-		context.lineTo(pos.x, pos.y + 5);
+		context.moveTo(normalizedPoint[0] - 2, normalizedPoint[1] - 2);
+		context.lineTo(normalizedPoint[0] + 2, normalizedPoint[1] - 2);
+		context.lineTo(normalizedPoint[0], normalizedPoint[1] + 5);
 		context.closePath();
 
 		context.fillStyle = color(dir, d3);
 		context.fill();
 
-		// context.restore();
+		context.restore();
 	};
 };
 
@@ -97,7 +99,7 @@ const color = (
 		interpolateRainbow: any;
 	}
 ) => {
-	return d3.scaleSequential([0, 360], d3.interpolateRainbow)(dir);
+	return d3.scaleSequential([0, 360], d3.interpolateRgb.gamma(0.5)('white', 'black'))(dir);
 };
 
 const generateSprites = (
@@ -115,7 +117,7 @@ const generateSprites = (
 		sprites.push({
 			move: generateLissajous(normalizedPoint[0], normalizedPoint[1], 1, 5),
 			created: performance.now(),
-			render: generateRenderer(d3, context, dir),
+			render: generateRenderer(d3, context, dir, normalizedPoint, data),
 		});
 	}
 
@@ -129,8 +131,8 @@ const update = (context: CanvasRenderingContext2D, sprites: ISprite[], width, he
 
 	// "wipe" canvas on each iteration
 
-	// context.fillStyle = '#000';
-	// context.fillRect(0, 0, width, height);
+	context.fillStyle = '#000';
+	context.fillRect(0, 0, width, height);
 
 	for (sprite of sprites) {
 		sprite.render(sprite.move((now - sprite.created) / 1000));
@@ -140,14 +142,14 @@ const update = (context: CanvasRenderingContext2D, sprites: ISprite[], width, he
 };
 
 const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>) => {
-	const { d3, data, projection } = props;
+	const { d3, data, width, projection } = props;
 
-	const width = window.innerWidth;
+	// const width = window.innerWidth;
 
 	if (node) {
 		const canvas = node;
 		// Get height based on data
-		const height = window.innerHeight || getVectorFieldHeight(props);
+		const height = getVectorFieldHeight(props);
 
 		// Fixes blurriness on Retina Displays
 		const dpi = window.devicePixelRatio;
@@ -167,25 +169,27 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 
 		context.save();
 
-		window.requestAnimationFrame(() => update(context, sprites, width, height));
+		// window.requestAnimationFrame(() => update(context, sprites, width, height));
 
-		// for (const { longitude, latitude, speed, dir } of data) {
-		// 	context.save();
-		// 	context.translate(...projection([longitude, latitude]));
-		// 	context.scale(scale(data, d3), scale(data, d3));
-		// 	context.rotate(Math.floor((dir * Math.PI) / 180));
+		for (const { longitude, latitude, speed, dir, beat = 0, ts = 0 } of data) {
+			const beatAlignment = 2 * beat;
 
-		// 	context.beginPath();
-		// 	context.moveTo(-2, -2);
-		// 	context.lineTo(2, -2);
-		// 	context.lineTo(0, 5);
-		// 	context.closePath();
+			context.save();
+			context.translate(...projection([longitude, latitude]));
+			// context.scale(scale(data, d3), scale(data, d3));
+			context.rotate(ts % 360);
 
-		// 	context.fillStyle = color(dir, d3);
-		// 	context.fill();
+			context.beginPath();
+			context.moveTo(-2 - beatAlignment, -2 - beatAlignment);
+			context.lineTo(2 + beatAlignment, -2 - beatAlignment);
+			context.lineTo(0, 5 + beatAlignment ** 4);
+			context.closePath();
 
-		// 	context.restore();
-		// }
+			context.fillStyle = color(dir, d3);
+			context.fill();
+
+			context.restore();
+		}
 	}
 };
 
@@ -195,15 +199,14 @@ const VectorField: FC<Omit<IVectorFieldProps, 'height'>> = props => {
 	const canvasRef = useCallback(
 		(node: HTMLCanvasElement) => {
 			if (hasMounted) {
-				console.log('begin drawing');
-
+				// console.log('begin drawing');
 				draw(node, props);
 			}
 		},
 		[props.data]
 	);
 
-	return <canvas ref={canvasRef}></canvas>;
+	return <canvas className={styles.canvas} ref={canvasRef}></canvas>;
 };
 
 export default VectorField;
