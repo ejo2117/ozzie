@@ -9,7 +9,7 @@ const { PI, abs, sin } = Math;
 const loadedAt = performance.now();
 
 const syncBPM = bpm => {
-	return bpm / 60 / 2;
+	return bpm / 60;
 };
 
 const Chart = () => {
@@ -18,7 +18,7 @@ const Chart = () => {
 	const requestRef = useRef();
 	const previousTimeRef = useRef();
 
-	const bpm = 92;
+	const bpm = 90;
 
 	const animate = time => {
 		if (!data) return;

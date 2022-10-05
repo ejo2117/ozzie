@@ -99,7 +99,7 @@ const color = (
 		interpolateRainbow: any;
 	}
 ) => {
-	return d3.scaleSequential([0, 360], d3.interpolateRgb.gamma(0.5)('white', 'black'))(dir);
+	return d3.scaleSequential([0, 360], d3.interpolateRgb.gamma(0.5)('#518d32', 'black'))(dir);
 };
 
 const generateSprites = (

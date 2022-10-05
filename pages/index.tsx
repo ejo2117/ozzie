@@ -31,11 +31,11 @@ const Home: NextPage = () => {
 			</Head>
 
 			<main className={styles.main}>
-				{/* <Sticker>
+				<Sticker>
 					<h1>
 						<i>Mezcal.</i>
 					</h1>
-				</Sticker> */}
+				</Sticker>
 				<Chart />
 			</main>
 		</div>
