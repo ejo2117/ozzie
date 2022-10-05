@@ -4,9 +4,11 @@ import type { GeoProjection } from 'd3';
 import { FC, useCallback, useEffect, useRef } from 'react';
 
 import useHasMounted from '../../../hooks/useHasMounted';
+
 import { randomInt, PI } from '../../../utils/math';
 
 import styles from '../Chart.module.scss';
+
 
 interface IDataFormat {
 	// point: [x: number, y: number];
@@ -16,6 +18,7 @@ interface IDataFormat {
 	dirCat: number;
 	speed: number;
 }
+
 
 interface ISprite {
 	move: ReturnType<typeof generateLissajous>;
@@ -35,6 +38,7 @@ interface IVectorFieldProps {
 	scale: () => void;
 	color: () => void;
 }
+
 
 const generateLissajous = (dx: number, dy: number, tx: number, ty: number) => {
 	// TODO implement our oscillation
@@ -66,6 +70,7 @@ const generateRenderer = (d3, context: CanvasRenderingContext2D, dir, normalized
 	};
 };
 
+
 const getVectorFieldHeight = (props: Omit<IVectorFieldProps, 'height'>) => {
 	const { d3, data, projection, width, margin } = props;
 
@@ -82,6 +87,7 @@ const getVectorFieldHeight = (props: Omit<IVectorFieldProps, 'height'>) => {
 
 	return height + margin * 2;
 };
+
 
 const scale = (
 	data: any[],
@@ -140,12 +146,15 @@ const update = (context: CanvasRenderingContext2D, sprites: ISprite[], width, he
 	}
 
 	window.requestAnimationFrame(() => update(context, sprites, width, height));
+
 };
 
 const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>) => {
 	const { d3, data, width, projection } = props;
 
+
 	// const width = window.innerWidth;
+
 
 	if (node) {
 		const canvas = node;
@@ -156,6 +165,7 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 		const dpi = window.devicePixelRatio;
 		canvas.width = Math.floor(width * dpi);
 		canvas.height = Math.floor(height * dpi);
+
 
 		const context = canvas.getContext('2d') as CanvasRenderingContext2D;
 
@@ -190,6 +200,7 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 			context.fill();
 
 			context.restore();
+
 		}
 	}
 };
@@ -200,14 +211,15 @@ const VectorField: FC<Omit<IVectorFieldProps, 'height'>> = props => {
 	const canvasRef = useCallback(
 		(node: HTMLCanvasElement) => {
 			if (hasMounted) {
-				// console.log('begin drawing');
 				draw(node, props);
 			}
 		},
 		[props.data]
 	);
 
+
 	return <canvas className={styles.canvas} ref={canvasRef}></canvas>;
+
 };
 
 export default VectorField;

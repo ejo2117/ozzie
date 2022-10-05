@@ -10,6 +10,7 @@ const loadedAt = performance.now();
 
 const syncBPM = bpm => {
 	return bpm / 60;
+
 };
 
 const Chart = () => {
@@ -17,6 +18,7 @@ const Chart = () => {
 
 	const requestRef = useRef();
 	const previousTimeRef = useRef();
+
 
 	const bpm = 90;
 
@@ -37,7 +39,9 @@ const Chart = () => {
 		requestRef.current = requestAnimationFrame(animate);
 	};
 
+
 	const oscillate = (data, factor, ts) => {
+
 		return data
 			? data.map((d, i) => {
 					return {
