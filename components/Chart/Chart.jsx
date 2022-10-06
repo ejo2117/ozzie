@@ -14,11 +14,12 @@ const syncBPM = bpm => {
 
 const Chart = () => {
 	const [data, setData] = useState(null);
+	const [bpm, setBpm] = useState(120);
 
 	const requestRef = useRef();
 	const previousTimeRef = useRef();
 
-	const bpm = 90;
+	// const bpm = 90;
 
 	const animate = time => {
 		if (!data) return;
@@ -64,18 +65,25 @@ const Chart = () => {
 		fetchData();
 	}, []);
 
-	useEffect(() => {
-		if (data) {
-			requestRef.current = requestAnimationFrame(animate);
-		}
+	// useEffect(() => {
+	// 	if (data) {
+	// 		requestRef.current = requestAnimationFrame(animate);
+	// 	}
 
-		return () => {
-			cancelAnimationFrame(requestRef.current);
-		};
-	}, [data]);
+	// 	return () => {
+	// 		cancelAnimationFrame(requestRef.current);
+	// 	};
+	// }, [data]);
 
 	return data ? (
 		<>
+			{bpm}
+			<input
+				type={'range'}
+				min={60}
+				max={160}
+				onChange={e => setBpm(e.target.value)}
+			></input>
 			<div id='chart'>
 				<VectorField
 					d3={d3}
