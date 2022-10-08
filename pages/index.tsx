@@ -10,7 +10,7 @@ const Home: NextPage = () => {
 	return (
 		<div className={styles.container}>
 			<Head>
-				<title>Oswald Fresh</title>
+				<title>Mesh</title>
 				<meta name='description' content='Official Website' />
 				<link rel='apple-touch-icon' sizes='180x180' href='/apple-touch-icon.png' />
 				<link rel='icon' type='image/png' sizes='32x32' href='/favicon-32x32.png' />
@@ -31,11 +31,11 @@ const Home: NextPage = () => {
 			</Head>
 
 			<main className={styles.main}>
-				<Sticker>
+				{/* <Sticker>
 					<h1>
 						<i>Mezcal.</i>
 					</h1>
-				</Sticker>
+				</Sticker> */}
 				<Chart />
 			</main>
 		</div>

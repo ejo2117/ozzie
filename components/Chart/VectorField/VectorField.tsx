@@ -98,9 +98,12 @@ const color = (
 	d3: {
 		scaleSequential: (arg0: number[], arg1: any) => { (arg0: any): any; new (): any };
 		interpolateRainbow: any;
-	}
+	},
+	rainbow
 ) => {
-	return d3.scaleSequential([0, 360], d3.interpolateRgb.gamma(0.5)('#518d32', 'black'))(dir);
+	return rainbow
+		? d3.scaleSequential([0, 360], d3.interpolateRainbow)(dir)
+		: d3.scaleSequential([0, 360], d3.interpolateRgb.gamma(0.5)('white', 'black'))(dir);
 };
 
 const generateSprites = (
@@ -173,12 +176,12 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 		// window.requestAnimationFrame(() => update(context, sprites, width, height));
 
 		for (const { longitude, latitude, speed, dir, beat = 0, ts = 0 } of data) {
-			const beatAlignment = 2 * beat;
+			const beatAlignment = 2 * beat * props.pulse;
 
 			context.save();
 			context.translate(...projection([longitude, latitude]));
 			// context.scale(scale(data, d3), scale(data, d3));
-			context.rotate(ts % 360);
+			props.rotate && context.rotate(Math.floor((dir * PI) / 180));
 
 			context.beginPath();
 			context.moveTo(-2 - beatAlignment, -2 - beatAlignment);
@@ -186,7 +189,7 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 			context.lineTo(0, 5 + beatAlignment ** 4);
 			context.closePath();
 
-			context.fillStyle = color(dir, d3);
+			context.fillStyle = color(dir, d3, props.rainbow);
 			context.fill();
 
 			context.restore();
