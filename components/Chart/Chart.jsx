@@ -69,20 +69,20 @@ const Chart = () => {
 	useEffect(() => {
 		const fetchData = async () => {
 			const csv = await d3.csv('./wind.csv');
-			setData(csv);
+			setData(csv.slice(0,2));
 		};
 		fetchData();
 	}, []);
 
-	useEffect(() => {
-		if (data) {
-			requestRef.current = requestAnimationFrame(animate);
-		}
+	// useEffect(() => {
+	// 	if (data) {
+	// 		requestRef.current = requestAnimationFrame(animate);
+	// 	}
 
-		return () => {
-			cancelAnimationFrame(requestRef.current);
-		};
-	}, [data]);
+	// 	return () => {
+	// 		cancelAnimationFrame(requestRef.current);
+	// 	};
+	// }, [data]);
 
 	return data ? (
 		<>

@@ -54,7 +54,7 @@ const generateRenderer = (d3, context: CanvasRenderingContext2D, dir, normalized
 	// ! need to pass different values in here –– we want our shapes to rotate and scale, but they should have a fixed origin
 	return (pos: { x: number; y: number }) => {
 		context.translate(normalizedPoint[0], normalizedPoint[1]);
-		context.scale(scale(data, d3), scale(data, d3));
+		// context.scale(scale(data, d3), scale(data, d3));
 		context.rotate(Math.floor((dir * PI) / 180));
 
 		context.beginPath();
@@ -183,28 +183,28 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 
 		context.save();
 
-		// window.requestAnimationFrame(() => update(context, sprites, width, height));
+		window.requestAnimationFrame(() => update(context, sprites, width, height));
 
-		for (const { longitude, latitude, speed, dir, beat = 0, ts = 0 } of data) {
-			const beatAlignment = 2 * beat * props.pulse;
+		// for (const { longitude, latitude, speed, dir, beat = 0, ts = 0 } of data) {
+		// 	const beatAlignment = 2 * beat * props.pulse;
 
-			context.save();
-			context.translate(...projection([longitude, latitude]));
-			// context.scale(scale(data, d3), scale(data, d3));
-			props.rotate && context.rotate(Math.floor((dir * PI) / 180));
+		// 	context.save();
+		// 	context.translate(...projection([longitude, latitude]));
+		// 	// context.scale(scale(data, d3), scale(data, d3));
+		// 	props.rotate && context.rotate(Math.floor((dir * PI) / 180));
 
-			context.beginPath();
-			context.moveTo(-2 - beatAlignment, -2 - beatAlignment);
-			context.lineTo(2 + beatAlignment, -2 - beatAlignment);
-			context.lineTo(0, 5 + beatAlignment ** 4);
-			context.closePath();
+		// 	context.beginPath();
+		// 	context.moveTo(-2 - beatAlignment, -2 - beatAlignment);
+		// 	context.lineTo(2 + beatAlignment, -2 - beatAlignment);
+		// 	context.lineTo(0, 5 + beatAlignment ** 4);
+		// 	context.closePath();
 
-			context.fillStyle = color(dir, d3, props.rainbow);
-			context.fill();
+		// 	context.fillStyle = color(dir, d3, props.rainbow);
+		// 	context.fill();
 
-			context.restore();
+		// 	context.restore();
 
-		}
+		// }
 	}
 };
 
