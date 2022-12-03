@@ -39,7 +39,7 @@ const Field = () => {
   
         context.fillStyle = "#f9f9f9";
         // Wipes Canvas on each update
-        // context.fillRect(0, 0, window.innerWidth, window.innerHeight);
+        context.fillRect(0, 0, window.innerWidth, window.innerHeight);
         // context.save()
 
         // put aside so all sprites are drawn for the same ms

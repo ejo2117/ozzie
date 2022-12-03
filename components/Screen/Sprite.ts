@@ -1,12 +1,14 @@
 import { Position } from "@lib/types";
 import { COLORS } from "./utils";
 
+type RenderArgs = [pos: Position, time: number]
+
 class Sprite {
     context: CanvasRenderingContext2D
     created: number
     weight: number
-    render: (pos: Position) => Position
-    move: (t: number) => Position
+    render: (args: RenderArgs) => Position
+    move: (t: number) => RenderArgs
 
     constructor(context: CanvasRenderingContext2D, weight: number) {
         this.context = context
@@ -16,20 +18,16 @@ class Sprite {
         this.render = this.generateRenderer()
     }
 
-    generateMovement(): any {
-        throw new Error("Method not implemented.")
-    }
-
     generateRenderer() {
-        return ([ x, y ]: Position) => {
+        return ([[ x, y ], t]: RenderArgs) => {
             this.context.beginPath();
-            this.context.arc(x, y, 2, 0, 2 * Math.PI)
+            this.context.arc(x, y, 100, 0, 2 * Math.PI)
             this.context.closePath();
             this.context.fillStyle = COLORS.rainbow((x / y), [-1, 2])
             this.context.fill()
             this.context.restore();
             
-
+            // For debugging
             return [x, y] as Position
         }
     }
@@ -45,10 +43,10 @@ class Sprite {
      * @memberof Sprite
      */
     generateLissajousMovement(dx: number, dy: number, tx: number, ty: number) {
-        return (t: number) => [
+        return (t: number) => [[
             window.innerWidth / 2 + dx * Math.sin(tx * t),
             window.innerHeight / 2 + dy * Math.cos(ty * t)
-        ] as Position
+        ], t] as RenderArgs
     }
 }
 
