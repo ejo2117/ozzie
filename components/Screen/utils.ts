@@ -2,8 +2,19 @@ import { NormalizedWindPoint, WindPoint } from '@lib/types';
 import * as d3 from 'd3'
 import { GeoGeometryObjects } from 'd3';
 
+/*-- CONSTANTS --*/
+
 const PROJECTION = d3.geoEquirectangular()
-const WIDTH = window.innerWidth ?? 400;
+const WIDTH = typeof window !== 'undefined' ? window.innerWidth : 400;
+const COLORS = {
+    rainbow: (x: number, range: [number,number]) => d3.scaleSequential(range, d3.interpolateRainbow)(x),
+    blackwhite: (x: number, range: [number,number]) => d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('white', 'black'))(x),
+    furnace: (x: number, range: [number,number]) => d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#233D4D', '#FE7F2D'))(x),
+    red: (x: number, range: [number,number]) => d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#DE9151', '#F34213'))(x),
+}
+
+
+/*-- FUNCTIONS --*/
 
 /** Ingests Wind Data from a CSV at the provided path.  */
 const ingestCSV = async (pathToFile = './wind.csv') => {
@@ -52,5 +63,7 @@ const normalizePoints = (data: WindPoint[]) => {
 
     return points;
 }
+
+
  
-export { normalizePoints, getProjectionBounds, ingestCSV }
+export { COLORS, getProjectionBounds, ingestCSV, normalizePoints }

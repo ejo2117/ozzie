@@ -1,17 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import * as d3 from 'd3'
 import Sprite from "./Sprite"
+import { Position } from "@lib/types"
 
 
 const Field = () => {
     // Hooks
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const [csvData, setCsvData] = useState()
     const [context, setContext] = useState<CanvasRenderingContext2D>()
     const [sprites, setSprites] = useState<Sprite[]>()
     
     // Set Context on Mount
     useEffect(() => {
-        if(canvasRef.current) setContext(canvasRef.current.getContext("2d")!)
+        if(canvasRef.current) { 
+            canvasRef.current.height = window.innerHeight
+            canvasRef.current.width = window.innerWidth
+            setContext(canvasRef.current.getContext("2d")!) 
+        }
     }, [canvasRef.current])
 
     // Create Sprites 
@@ -26,14 +32,14 @@ const Field = () => {
     }, [context])
 
     // Logic
-
     const update = useCallback(()=>{
         if(!context || !sprites) return
         
-        let now, sprite;
+        let now: number, sprite: Sprite;
   
         context.fillStyle = "#f9f9f9";
-        context.fillRect(0, 0, 300, 150);
+        // Wipes Canvas on each update
+        // context.fillRect(0, 0, window.innerWidth, window.innerHeight);
         // context.save()
 
         // put aside so all sprites are drawn for the same ms
@@ -41,7 +47,10 @@ const Field = () => {
         
         for (sprite of sprites)
         {
-            sprite.render(sprite.move((now - sprite.created) / 1000));
+            const head = sprite.render(sprite.move((now - sprite.created) / 1000));
+            
+            // Debug movement head 
+            console.log([Math.floor(head[0]), Math.floor(head[1])])
         }
 
         window.requestAnimationFrame(() => update());

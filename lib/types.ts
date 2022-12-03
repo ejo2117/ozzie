@@ -9,3 +9,6 @@ export type WindPoint = {
 export type NormalizedWindPoint = WindPoint & {
     position: [number, number] | null;
 }
+
+/** Point (x, y) in 2D space */
+export type Position = [number, number]
