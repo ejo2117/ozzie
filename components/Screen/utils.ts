@@ -4,6 +4,8 @@ import { GeoGeometryObjects } from 'd3';
 
 /*-- CONSTANTS --*/
 
+const { abs, sin, PI } = Math; 
+
 const PROJECTION = d3.geoEquirectangular()
 const WIDTH = typeof window !== 'undefined' ? window.innerWidth : 400;
 const COLORS = {
@@ -65,5 +67,7 @@ const normalizePoints = (data: WindPoint[]) => {
 }
 
 
- 
-export { COLORS, getProjectionBounds, ingestCSV, normalizePoints }
+/** At time `t` seconds, this function returns the absolute amplitude of a sine wave that crests on every beat, given a `bpm`  */
+const getBeatAlignment = (bpm: number, t: number, crestFactor = 1) => abs(sin( bpm / 60 * PI * t)) ** crestFactor
+
+export { COLORS, getBeatAlignment, getProjectionBounds, ingestCSV, normalizePoints }
