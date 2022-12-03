@@ -9,10 +9,12 @@ const Field = () => {
     const [context, setContext] = useState<CanvasRenderingContext2D>()
     const [sprites, setSprites] = useState<Sprite[]>()
     
+    // Set Context on Mount
     useEffect(() => {
         if(canvasRef.current) setContext(canvasRef.current.getContext("2d")!)
     }, [canvasRef.current])
 
+    // Create Sprites 
     useEffect(() => {
         if (context) {
             const results = []
@@ -26,37 +28,30 @@ const Field = () => {
     // Logic
 
     const update = useCallback(()=>{
-        console.log('.');
-        
         if(!context || !sprites) return
-        console.log('actually updating');
-
         
         let now, sprite;
   
-        context.fillStyle = "#000000";
+        context.fillStyle = "#f9f9f9";
         context.fillRect(0, 0, 300, 150);
-        context.save()
+        // context.save()
 
         // put aside so all sprites are drawn for the same ms
         now = performance.now(); 
         
         for (sprite of sprites)
         {
-            context.restore()
             sprite.render(sprite.move((now - sprite.created) / 1000));
         }
 
-        window.requestAnimationFrame(update);
+        window.requestAnimationFrame(() => update());
     },[context, sprites])
 
-
-    useEffect(() => {
-        window.requestAnimationFrame(update)
-
-    },[context, sprites])
-    console.log('CTX: ', context);
-    
+    try {
+        window.requestAnimationFrame(() => update())
+    } catch (error) {
+        // assume window is not available
+    }
 
     return <canvas ref={canvasRef}></canvas>
 }

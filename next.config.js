@@ -8,6 +8,14 @@ const nextConfig = {
 		prependData: `@import 'variables.scss';`,
 	},
 	swcMinify: true,
+	webpack: (config, opts) => {
+		let configCopy = { ...config };
+		configCopy.resolve.alias = {
+			...config.resolve.alias,
+			'@lib': path.resolve('./lib')
+		}
+		return configCopy
+	}
 };
 
 module.exports = nextConfig;

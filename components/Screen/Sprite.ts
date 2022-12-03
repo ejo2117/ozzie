@@ -1,4 +1,5 @@
 import { colors } from '../Chart/VectorField/config'
+import * as d3 from 'd3'
 
 class Sprite {
     context: CanvasRenderingContext2D
@@ -25,13 +26,12 @@ class Sprite {
 
     generateRenderer() {
         return (pos: { x: number; y: number }) => {
-            console.log('context: ', this.context);
-            console.log(pos.x, pos.y);
-            
-           
-            this.context.arc(pos.x / 10, pos.y / 10, 2, 0, 2 * Math.PI)
-            this.context.fillStyle = '#fff'
+            this.context.beginPath();
+            this.context.arc(pos.x / 5, pos.y / 5, 2, 0, 2 * Math.PI)
+            this.context.closePath();
+            this.context.fillStyle = '#000'
             this.context.fill()
+            this.context.restore();
         }
     }
 
