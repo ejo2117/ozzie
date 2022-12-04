@@ -10,7 +10,6 @@ const loadedAt = performance.now();
 
 const syncBPM = bpm => {
 	return bpm / 60;
-
 };
 
 const Chart = () => {
@@ -22,7 +21,6 @@ const Chart = () => {
 
 	const requestRef = useRef();
 	const previousTimeRef = useRef();
-
 
 	const bpm = 90;
 
@@ -43,22 +41,19 @@ const Chart = () => {
 		requestRef.current = requestAnimationFrame(animate);
 	};
 
-
 	const oscillate = (data, factor, ts) => {
-
 		return data
 			? data.map((d, i) => {
 					return {
 						...d,
 						...{
+							dir: Math.round((parseFloat(d.dir) + factor * 0.1).toFixed(2) % 361),
 							beat: abs(sin(syncBPM(bpm) * PI * ts)),
 							ts,
 							// speed: randomInt(10),
 						},
 						...(ripple && {
-							dir: Math.round(
-								(parseFloat(d.dir) + factor * 0.1).toFixed(2) % 361
-							),
+							dir: Math.round((parseFloat(d.dir) + factor * 0.1).toFixed(2) % 361),
 						}),
 					};
 			  })
@@ -69,7 +64,7 @@ const Chart = () => {
 	useEffect(() => {
 		const fetchData = async () => {
 			const csv = await d3.csv('./wind.csv');
-			setData(csv.slice(0,2));
+			setData(csv.slice(0, 2));
 		};
 		fetchData();
 	}, []);
