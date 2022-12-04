@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import Sprite from './Sprite';
+import Sprite, { FieldConfig } from './Sprite';
 import { Position } from '@lib/types';
+import { getProjectionBounds } from './utils';
+import { randomArbitrary, randomInt } from '../../utils/math';
 
 const getUserTheme = () => {
 	if (typeof document === 'undefined') {
@@ -10,7 +12,21 @@ const getUserTheme = () => {
 	return getComputedStyle(document.body, ':after').content;
 };
 
+const randomLissajousArgs = (maxWidth: number, maxHeight: number, tx: number, ty: number) => {
+	return [randomInt(100, maxWidth), randomInt(100, maxHeight), randomArbitrary(1, tx), randomArbitrary(1, ty)] as [
+		number,
+		number,
+		number,
+		number
+	];
+};
+
 const Field = () => {
+	// TODO - Make these stateful for config via UI.
+	// Constants
+	const WIDTH = typeof window === 'undefined' ? 500 : window.innerWidth;
+	const HEIGHT = typeof window === 'undefined' ? 500 : window.innerHeight;
+
 	// Hooks
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const [csvData, setCsvData] = useState();
@@ -31,8 +47,28 @@ const Field = () => {
 		if (context) {
 			const results = [];
 			const createdAt = performance.now();
-			for (let i = 0; i < 1; i++) {
-				results.push(new Sprite({ context, weight: 4, bpm: 120, created: createdAt }));
+
+			// Relevant Container Information
+			const FieldInfo: FieldConfig = {
+				context,
+				height: window.innerHeight,
+				width: window.innerWidth,
+				bpm: 120,
+				theme: 'red',
+			};
+
+			for (let i = 0; i < 10; i++) {
+				results.push(
+					new Sprite(
+						{
+							weight: 4,
+							created: createdAt,
+							behavior: randomLissajousArgs(WIDTH - 64, HEIGHT - 64, 4, 4),
+							previousPosition: [i * 5, i * 5],
+						},
+						FieldInfo
+					)
+				);
 			}
 			setSprites(results);
 		}
@@ -53,9 +89,10 @@ const Field = () => {
 		now = performance.now();
 
 		for (sprite of sprites) {
-			const head = sprite.render(sprite.move((now - sprite.created) / 1000));
+			sprite.render(sprite.move((now - sprite.created) / 1000));
 
 			// Debug movement head
+			// const head = sprite.render(sprite.move((now - sprite.created) / 1000))
 			// console.log([Math.floor(head[0]), Math.floor(head[1])]);
 		}
 
