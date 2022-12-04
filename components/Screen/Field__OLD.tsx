@@ -2,24 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import Sprite, { FieldConfig } from './Sprite';
 import { NormalizedWindPoint, Position } from '@lib/types';
-import { getProjectionBounds, ingestCSV, scaleContextForData } from './utils';
+import { getProjectionBounds, getUserTheme, ingestCSV, randomLissajousArgs, scaleContextForData } from './utils';
 import { randomArbitrary, randomInt } from '../../utils/math';
-
-const getUserTheme = () => {
-	if (typeof document === 'undefined') {
-		return 'l';
-	}
-	return getComputedStyle(document.body, ':after').content;
-};
-
-const randomLissajousArgs = (maxWidth: number, maxHeight: number, tx: number, ty: number) => {
-	return [randomInt(100, maxWidth), randomInt(100, maxHeight), randomArbitrary(1, tx), randomArbitrary(1, ty)] as [
-		number,
-		number,
-		number,
-		number
-	];
-};
 
 const Field = () => {
 	// TODO - Make these stateful for config via UI.
@@ -27,28 +11,33 @@ const Field = () => {
 	const WIDTH = typeof window === 'undefined' ? 500 : window.innerWidth;
 	const HEIGHT = typeof window === 'undefined' ? 500 : window.innerHeight;
 
-	// Hooks
+	// Refs
+	const animationRequestRef = useRef<number>();
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+
+	// Hooks
 	const [csvData, setCsvData] = useState<NormalizedWindPoint[]>();
 	const [context, setContext] = useState<CanvasRenderingContext2D>();
 	const [sprites, setSprites] = useState<Sprite[]>();
 
-	// Setup Canvas on Mount
+	// Setup Canvas on Mount and set Context
 	useEffect(() => {
 		const setupCanvas = async () => {
+			console.log('setup canvas.');
 			const points = await ingestCSV();
 
-			const { bounds, translationOffset } = getProjectionBounds(points);
+			const { bounds, translationOffset } = getProjectionBounds(points, WIDTH);
 
 			// y1 - y0
 			const adjustedHeight = Math.ceil(bounds[1][1] - bounds[0][1]);
 
 			const DPI = window.devicePixelRatio;
 
-			canvasRef.current.height = adjustedHeight * DPI;
+			canvasRef.current.height = adjustedHeight * DPI * 2;
 			canvasRef.current.width = WIDTH * DPI;
 			const context = canvasRef.current.getContext('2d');
 			context.scale(DPI, DPI);
+			// context.translate(2, HEIGHT * DPI);
 
 			setContext(context);
 			setCsvData(points);
@@ -59,7 +48,7 @@ const Field = () => {
 		}
 	}, [canvasRef.current]);
 
-	// Create Sprites -- ORBIT
+	// Create Sprites -- ORBIT TEST
 	// useEffect(() => {
 	// 	if (context) {
 	// 		const results = [];
@@ -93,7 +82,7 @@ const Field = () => {
 	// 	}
 	// }, [context]);
 
-	// Create Sprites -- WIND
+	// Create Sprites -- WIND DATA
 	useEffect(() => {
 		if (context) {
 			const results = [];
@@ -105,7 +94,7 @@ const Field = () => {
 				height: window.innerHeight,
 				width: window.innerWidth,
 				bpm: 120,
-				theme: 'rainbow',
+				theme: 'red',
 			};
 
 			const uniformBehavior = randomLissajousArgs(5, 5, 4, 4);
@@ -130,36 +119,40 @@ const Field = () => {
 	}, [context]);
 
 	// Logic
-	const update = useCallback(() => {
-		if (!context || !sprites) return;
+	const update = sprites => {
+		console.log('checking...');
 
-		let now: number, sprite: Sprite;
+		if (sprites) {
+			console.log('.');
 
-		context.fillStyle = getUserTheme().includes('l') ? '#080593' : '#000';
-		// Wipes Canvas on each update
-		// context.scale(window.devicePixelRatio, window.devicePixelRatio);
-		context.fillRect(0, 0, window.innerWidth, window.innerHeight);
-		// context.save();
+			// Set background based on
+			context.fillStyle = getUserTheme().includes('l') ? '#000' : '#000';
+			// Wipes Canvas on each update
+			// context.scale(window.devicePixelRatio, window.devicePixelRatio);
+			context.fillRect(0, 0, window.innerWidth, window.innerHeight);
+			// context.save();
 
-		// put aside so all sprites are drawn for the same ms
-		now = performance.now();
+			// put aside so all sprites are drawn for the same ms
+			const now = performance.now();
+			let sprite: Sprite;
 
-		for (sprite of sprites) {
-			sprite.render(sprite.move((now - sprite.created) / 1000));
+			for (sprite of sprites) {
+				sprite.render(sprite.move((now - sprite.created) / 1000));
 
-			// Debug movement head
-			// const head = sprite.render(sprite.move((now - sprite.created) / 1000))
-			// console.log([Math.floor(head[0]), Math.floor(head[1])]);
+				// Debug movement head
+				// const head = sprite.render(sprite.move((now - sprite.created) / 1000))
+				// console.log([Math.floor(head[0]), Math.floor(head[1])]);
+			}
 		}
 
-		window.requestAnimationFrame(() => update());
-	}, [context, sprites]);
+		window.requestAnimationFrame(() => update(sprites));
+	};
 
-	try {
-		window.requestAnimationFrame(() => update());
-	} catch (error) {
-		// assume window is not available
-	}
+	// Another "Mount", specifically for the animation cycle
+	useEffect(() => {
+		animationRequestRef.current = window.requestAnimationFrame(() => update(sprites));
+		return () => window.cancelAnimationFrame(animationRequestRef.current);
+	}, []);
 
 	return <canvas ref={canvasRef}></canvas>;
 };

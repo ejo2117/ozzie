@@ -8,6 +8,8 @@ const randomArbitrary = (min = 0, max = 1) => {
 	return Math.random() * (max - min) + 1;
 };
 
+const randomlyNegative = () => (Math.random() > 0.5 ? 1 : -1);
+
 const PI = Math.PI;
 
-export { randomInt, randomArbitrary, PI };
+export { randomInt, randomArbitrary, randomlyNegative, PI };

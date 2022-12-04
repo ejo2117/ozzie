@@ -38,6 +38,7 @@ class Sprite {
 		this.theme = theme;
 
 		this.move = this.generateLissajousMovement(...behavior);
+		// this.move = this.generateStaticMovement(previousPosition);
 		this.render = this.generateRenderer();
 
 		this.previousPosition = previousPosition;
@@ -76,11 +77,11 @@ class Sprite {
 	}
 
 	drawCircle([x, y]: Position, t: number) {
-		const BEAT_AGGRESSION = 2;
+		const BEAT_AGGRESSION = 1.25;
 		const BEAT = getBeatAlignment(this.bpm, t) * BEAT_AGGRESSION;
-		const RADIUS = BEAT * 1 + 1;
+		const RADIUS = BEAT * 1 + 5;
 		const ACCELERATION = (y - this.previousPosition[1]) / (x - this.previousPosition[0]);
-		const HUE = (BEAT * x) / y;
+		const HUE = ACCELERATION;
 
 		// this.context.translate(x, y);
 

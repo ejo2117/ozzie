@@ -1,13 +1,14 @@
 import { NormalizedWindPoint, WindPoint } from '@lib/types';
 import * as d3 from 'd3';
 import { GeoGeometryObjects } from 'd3';
+import { randomArbitrary, randomInt, randomlyNegative } from '../../utils/math';
 
 /*-- CONSTANTS --*/
 
 const { abs, sin, PI } = Math;
 
 const PROJECTION = d3.geoEquirectangular();
-const WIDTH = typeof window !== 'undefined' ? window.innerWidth : 800;
+// const WIDTH = typeof window !== 'undefined' ? window.innerWidth : 800;
 const COLORS = {
 	rainbow: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateRainbow)(x),
 	blackwhite: (x: number, range: [number, number]) =>
@@ -22,28 +23,30 @@ const COLORS = {
 /** Ingests Wind Data from a CSV at the provided path.  */
 const ingestCSV = async (pathToFile = './wind.csv') => {
 	const csv = await d3.csv<keyof WindPoint>(pathToFile);
-	const parsed = csv.slice(0, 500).reduce((result, current) => {
-		result.push({
-			longitude: +current.longitude!,
-			latitude: +current.latitude!,
-			dir: +current.dir!,
-			dirCat: +current.dirCat!,
-			speed: +current.speed!,
-		});
+	const parsed = csv.slice(0, csv.length - 1).reduce((result, current, i) => {
+		if (!(i % 4)) {
+			result.push({
+				longitude: +current.longitude!,
+				latitude: +current.latitude!,
+				dir: +current.dir!,
+				dirCat: +current.dirCat!,
+				speed: +current.speed!,
+			});
+		}
 		return result;
 	}, [] as WindPoint[]);
 	return normalizePoints(parsed);
 };
 
 /** Gets boundaries for the 2D plane contianing the projected data */
-const getProjectionBounds = (data: WindPoint[]) => {
+const getProjectionBounds = (data: WindPoint[], width) => {
 	const projectionInput = {
 		type: 'MultiPoint',
 		coordinates: data.map(d => [d.longitude, d.latitude]),
 		/** intentionally empty to satisy TS */
 		geometries: {} as GeoGeometryObjects[],
 	};
-	const bounds = d3.geoPath(PROJECTION.fitWidth(WIDTH, projectionInput)).bounds(projectionInput);
+	const bounds = d3.geoPath(PROJECTION.fitWidth(width, projectionInput)).bounds(projectionInput);
 	const translationOffset = PROJECTION.translate();
 
 	// PROJECTION.translate
@@ -51,12 +54,17 @@ const getProjectionBounds = (data: WindPoint[]) => {
 	return { bounds, translationOffset };
 };
 
-/** Projects the data to an `Array` of [x, y] points */
+/** Adds a `position` containing a projected [x, y] point to every object in the data array.
+ *
+ * @See typeof `PROJECTION`
+ */
+
 const normalizePoints = (data: WindPoint[]) => {
 	const points = [] as NormalizedWindPoint[];
 
 	for (const point of data) {
 		const position = PROJECTION([point.longitude, point.latitude]);
+		if (!position || !position[0]) continue;
 		points.push({
 			...point,
 			position,
@@ -73,4 +81,29 @@ const scaleContextForData = (data: WindPoint[]) => {
 	return d3.scaleSqrt([0, d3.max<number>(data.map(d => d.speed))]);
 };
 
-export { scaleContextForData, COLORS, getBeatAlignment, getProjectionBounds, ingestCSV, normalizePoints };
+const getUserTheme = () => {
+	if (typeof document === 'undefined') {
+		return 'l';
+	}
+	return getComputedStyle(document.body, ':after').content;
+};
+
+const randomLissajousArgs = (maxWidth: number, maxHeight: number, tx: number, ty: number) => {
+	return [
+		randomInt(100, maxWidth) * randomlyNegative(),
+		randomInt(100, maxHeight) * randomlyNegative(),
+		randomArbitrary(1, tx),
+		randomArbitrary(1, ty),
+	] as [number, number, number, number];
+};
+
+export {
+	randomLissajousArgs,
+	getUserTheme,
+	scaleContextForData,
+	COLORS,
+	getBeatAlignment,
+	getProjectionBounds,
+	ingestCSV,
+	normalizePoints,
+};

@@ -1,16 +1,28 @@
-import { forwardRef, useState } from "react"
+import { forwardRef, useEffect, useRef, useState } from 'react';
+import SpriteField from './Field';
+import { ingestCSV } from './utils';
 
-type CanvasProps = JSX.IntrinsicElements['canvas'] & {
+type CanvasProps = JSX.IntrinsicElements['canvas'] & {};
 
-}
+const Canvas = () => {
+	const canvasRef = useRef<HTMLCanvasElement>();
 
-const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>((props, ref) => {
-    const [ctx, setCtx] = useState<CanvasRenderingContext2D>() 
-    
-    
-    return <canvas ref={ref}></canvas>
-})
+	useEffect(() => {
+		const setup = async () => {
+			if (canvasRef.current) {
+				const points = await ingestCSV();
+				new SpriteField({
+					canvas: canvasRef.current,
+					data: points,
+					width: 950,
+					theme: 'rainbow',
+				});
+			}
+		};
+		setup();
+	}, [canvasRef.current]);
 
-Canvas.displayName = 'Canvas'
+	return <canvas ref={canvasRef}></canvas>;
+};
 
-export default Canvas
+export default Canvas;
