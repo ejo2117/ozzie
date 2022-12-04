@@ -12,10 +12,16 @@
 	@media (prefers-color-scheme: light) {
 		background-color: $black;
 		color: $white;
+		svg path {
+			fill: $white;
+		}
 	}
 	@media (prefers-color-scheme: dark) {
 		background-color: $white;
 		color: $black;
+		svg path {
+			fill: $black;
+		}
 	}
 
 	svg {
