@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import Sprite, { FieldConfig } from './Sprite';
-import { Position } from '@lib/types';
-import { getProjectionBounds } from './utils';
+import { NormalizedWindPoint, Position } from '@lib/types';
+import { getProjectionBounds, ingestCSV, scaleContextForData } from './utils';
 import { randomArbitrary, randomInt } from '../../utils/math';
 
 const getUserTheme = () => {
@@ -29,20 +29,71 @@ const Field = () => {
 
 	// Hooks
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const [csvData, setCsvData] = useState();
+	const [csvData, setCsvData] = useState<NormalizedWindPoint[]>();
 	const [context, setContext] = useState<CanvasRenderingContext2D>();
 	const [sprites, setSprites] = useState<Sprite[]>();
 
-	// Set Context on Mount
+	// Setup Canvas on Mount
 	useEffect(() => {
+		const setupCanvas = async () => {
+			const points = await ingestCSV();
+
+			const { bounds, translationOffset } = getProjectionBounds(points);
+
+			// y1 - y0
+			const adjustedHeight = Math.ceil(bounds[1][1] - bounds[0][1]);
+
+			const DPI = window.devicePixelRatio;
+
+			canvasRef.current.height = adjustedHeight * DPI;
+			canvasRef.current.width = WIDTH * DPI;
+			const context = canvasRef.current.getContext('2d');
+			context.scale(DPI, DPI);
+
+			setContext(context);
+			setCsvData(points);
+		};
+
 		if (canvasRef.current) {
-			canvasRef.current.height = window.innerHeight;
-			canvasRef.current.width = window.innerWidth;
-			setContext(canvasRef.current.getContext('2d')!);
+			setupCanvas();
 		}
 	}, [canvasRef.current]);
 
-	// Create Sprites
+	// Create Sprites -- ORBIT
+	// useEffect(() => {
+	// 	if (context) {
+	// 		const results = [];
+	// 		const createdAt = performance.now();
+
+	// 		// Relevant Container Information
+	// 		const FieldInfo: FieldConfig = {
+	// 			context,
+	// 			height: window.innerHeight,
+	// 			width: window.innerWidth,
+	// 			bpm: 125,
+	// 			theme: 'furnace',
+	// 		};
+
+	// 		const uniformBehavior = randomLissajousArgs(WIDTH + 20, HEIGHT + 20, 4, 4);
+
+	// 		for (let i = 0; i < 1; i++) {
+	// 			results.push(
+	// 				new Sprite(
+	// 					{
+	// 						weight: 4,
+	// 						created: createdAt,
+	// 						behavior: uniformBehavior,
+	// 						previousPosition: [i * 5, i * 5],
+	// 					},
+	// 					FieldInfo
+	// 				)
+	// 			);
+	// 		}
+	// 		setSprites(results);
+	// 	}
+	// }, [context]);
+
+	// Create Sprites -- WIND
 	useEffect(() => {
 		if (context) {
 			const results = [];
@@ -54,17 +105,21 @@ const Field = () => {
 				height: window.innerHeight,
 				width: window.innerWidth,
 				bpm: 120,
-				theme: 'red',
+				theme: 'rainbow',
 			};
 
-			for (let i = 0; i < 10; i++) {
+			const uniformBehavior = randomLissajousArgs(5, 5, 4, 4);
+
+			for (let i = 0; i < csvData.length; i++) {
+				const element = csvData[i];
 				results.push(
 					new Sprite(
 						{
-							weight: 4,
+							weight: element.dir,
 							created: createdAt,
-							behavior: randomLissajousArgs(WIDTH - 64, HEIGHT - 64, 4, 4),
-							previousPosition: [i * 5, i * 5],
+							behavior: randomLissajousArgs(1, 1, 2, 2),
+							previousPosition: element.position,
+							scaleFactor: scaleContextForData(csvData)(null),
 						},
 						FieldInfo
 					)
@@ -80,10 +135,11 @@ const Field = () => {
 
 		let now: number, sprite: Sprite;
 
-		context.fillStyle = getUserTheme().includes('l') ? '#fff' : '#000';
+		context.fillStyle = getUserTheme().includes('l') ? '#080593' : '#000';
 		// Wipes Canvas on each update
+		// context.scale(window.devicePixelRatio, window.devicePixelRatio);
 		context.fillRect(0, 0, window.innerWidth, window.innerHeight);
-		// context.save()
+		// context.save();
 
 		// put aside so all sprites are drawn for the same ms
 		now = performance.now();

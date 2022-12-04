@@ -24,7 +24,7 @@ const Home: NextPage = () => {
 			</Head>
 
 			<main className={styles.main}>
-				<Sticker />
+				{/* <Sticker /> */}
 				<Field />
 			</main>
 		</div>

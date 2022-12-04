@@ -1,5 +1,5 @@
 import { Position } from '@lib/types';
-import { COLORS, getBeatAlignment } from './utils';
+import { COLORS, getBeatAlignment, scaleContextForData } from './utils';
 
 type TemporalPoint = [Position, number];
 
@@ -23,13 +23,15 @@ class Sprite {
 	move: (t: number) => TemporalPoint;
 	container: FieldConfig;
 	theme: keyof typeof COLORS;
+	scaleFactor: number;
 
 	constructor(
-		{ weight, created = performance.now(), previousPosition = [0, 0], behavior }: Partial<Sprite>,
+		{ scaleFactor, weight, created = performance.now(), previousPosition = [0, 0], behavior }: Partial<Sprite>,
 		{ context, bpm, theme }: FieldConfig
 	) {
 		this.weight = weight;
 		this.created = created;
+		this.scaleFactor = scaleFactor;
 
 		this.context = context;
 		this.bpm = bpm;
@@ -49,6 +51,10 @@ class Sprite {
 		};
 	}
 
+	generateStaticMovement(position: Position) {
+		return (t: number) => [position, t] as TemporalPoint;
+	}
+
 	/**
 	 * Given parameters, returns an "orbit" function.
 	 *
@@ -63,19 +69,26 @@ class Sprite {
 	 */
 	generateLissajousMovement(dx: number, dy: number, tx: number, ty: number) {
 		return (t: number) =>
-			[[window.innerWidth / 2 + dx * Math.sin(tx * t), window.innerHeight / 2 + dy * Math.cos(ty * t)], t] as TemporalPoint;
+			[
+				[this.previousPosition[0] + dx * Math.sin(tx * t), this.previousPosition[1] + dy * Math.cos(ty * t)],
+				t,
+			] as TemporalPoint;
 	}
 
 	drawCircle([x, y]: Position, t: number) {
-		const BEAT_AGGRESSION = 5;
+		const BEAT_AGGRESSION = 2;
 		const BEAT = getBeatAlignment(this.bpm, t) * BEAT_AGGRESSION;
-		const RADIUS = BEAT * 10;
+		const RADIUS = BEAT * 1 + 1;
 		const ACCELERATION = (y - this.previousPosition[1]) / (x - this.previousPosition[0]);
+		const HUE = (BEAT * x) / y;
 
+		// this.context.translate(x, y);
+
+		this.context.scale(this.scaleFactor, this.scaleFactor);
 		this.context.beginPath();
 		this.context.arc(x, y, RADIUS, 0, 2 * Math.PI);
 		this.context.closePath();
-		this.context.fillStyle = COLORS[this.theme](x / y, [-1, 1]);
+		this.context.fillStyle = COLORS[this.theme](HUE, [-1, 1]);
 		this.context.fill();
 		this.context.restore();
 	}
