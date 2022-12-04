@@ -14,6 +14,10 @@ const syncBPM = bpm => {
 
 const Chart = () => {
 	const [data, setData] = useState(null);
+	const [rainbow, setRainbow] = useState(false);
+	const [pulse, setPulse] = useState(false);
+	const [rotate, setRotate] = useState(false);
+	const [ripple, setRipple] = useState(false);
 
 	const requestRef = useRef();
 	const previousTimeRef = useRef();
@@ -43,13 +47,14 @@ const Chart = () => {
 					return {
 						...d,
 						...{
-							dir: Math.round(
-								(parseFloat(d.dir) + factor * 0.1).toFixed(2) % 361
-							),
+							dir: Math.round((parseFloat(d.dir) + factor * 0.1).toFixed(2) % 361),
 							beat: abs(sin(syncBPM(bpm) * PI * ts)),
 							ts,
 							// speed: randomInt(10),
 						},
+						...(ripple && {
+							dir: Math.round((parseFloat(d.dir) + factor * 0.1).toFixed(2) % 361),
+						}),
 					};
 			  })
 			: [];
@@ -59,23 +64,29 @@ const Chart = () => {
 	useEffect(() => {
 		const fetchData = async () => {
 			const csv = await d3.csv('./wind.csv');
-			setData(csv);
+			setData(csv.slice(0, 2));
 		};
 		fetchData();
 	}, []);
 
-	useEffect(() => {
-		if (data) {
-			requestRef.current = requestAnimationFrame(animate);
-		}
+	// useEffect(() => {
+	// 	if (data) {
+	// 		requestRef.current = requestAnimationFrame(animate);
+	// 	}
 
-		return () => {
-			cancelAnimationFrame(requestRef.current);
-		};
-	}, [data]);
+	// 	return () => {
+	// 		cancelAnimationFrame(requestRef.current);
+	// 	};
+	// }, [data]);
 
 	return data ? (
 		<>
+			<div>
+				<button onClick={() => setRainbow(!rainbow)}>Rainbow</button>
+				<button onClick={() => setPulse(!pulse)}>Pulse</button>
+				<button onClick={() => setRotate(!rotate)}>Rotate</button>
+				<button onClick={() => setRipple(!ripple)}>Ripple</button>
+			</div>
 			<div id='chart'>
 				<VectorField
 					d3={d3}
@@ -83,6 +94,10 @@ const Chart = () => {
 					margin={20}
 					data={data}
 					projection={d3.geoEquirectangular()}
+					rainbow={rainbow}
+					pulse={pulse}
+					rotate={rotate}
+					ripple={ripple}
 				></VectorField>
 			</div>
 		</>

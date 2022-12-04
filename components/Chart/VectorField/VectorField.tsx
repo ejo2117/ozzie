@@ -72,9 +72,7 @@ const getVectorFieldHeight = (props: Omit<IVectorFieldProps, 'height'>) => {
 
 	const points = { type: 'MultiPoint', coordinates: data?.map(d => [d.longitude, d.latitude]) };
 
-	const [[x0, y0], [x1, y1]] = d3
-		.geoPath(projection.fitWidth(width - margin * 2, points))
-		.bounds(points);
+	const [[x0, y0], [x1, y1]] = d3.geoPath(projection.fitWidth(width - margin * 2, points)).bounds(points);
 
 	const [tx, ty] = projection?.translate();
 	const height = Math.ceil(y1 - y0);
@@ -104,12 +102,7 @@ const color = (
 	return d3.scaleSequential([0, 360], d3.interpolateRainbow)(dir);
 };
 
-const generateSprites = (
-	d3,
-	context: CanvasRenderingContext2D,
-	data: IDataFormat[],
-	projection: GeoProjection
-) => {
+const generateSprites = (d3, context: CanvasRenderingContext2D, data: IDataFormat[], projection: GeoProjection) => {
 	let sprites = [] as ISprite[];
 
 	// define a movement behavior, a creation timestamp, and a renderer for every data point
