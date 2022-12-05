@@ -2,6 +2,8 @@ html,
 body {
 	padding: 0;
 	margin: 0;
+	height: 100vh;
+	overflow: hidden;
 	font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,
 		Helvetica Neue, sans-serif;
 }
@@ -17,6 +19,47 @@ a {
 
 * {
 	box-sizing: border-box;
+}
+
+/* canvas {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	inset: 0;
+} */
+
+button#openControls {
+	position: absolute;
+	top: 16px;
+	left: 50%;
+	translate: -50% 0%;
+}
+
+section#controls {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	translate: -50% -50%;
+
+	height: 250px;
+	width: 400px;
+	background-color: white;
+	border-radius: 16px;
+	padding: 16px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	z-index: 100;
+}
+
+section#controls[data-visible='true'] {
+	visibility: visible;
+}
+
+section#controls[data-visible='false'] {
+	visibility: hidden;
 }
 
 @media (prefers-color-scheme: dark) {

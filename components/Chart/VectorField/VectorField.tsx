@@ -167,7 +167,7 @@ const draw = (node: HTMLCanvasElement, props: Omit<IVectorFieldProps, 'height'>)
 		// window.requestAnimationFrame(() => update(context, sprites, width, height));
 
 		for (const { longitude, latitude, speed, dir, beat = 0, ts = 0 } of data) {
-			const beatAlignment = 2 * beat * 0;
+			const beatAlignment = 2;
 
 			context.save();
 			context.translate(...projection([longitude, latitude]));

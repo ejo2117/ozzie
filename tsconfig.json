@@ -23,7 +23,8 @@
 		"**/*.ts",
 		"**/*.tsx",
 		"components/Chart/Chart.jsx",
-		"components/Chart/VectorField"
+		"components/Chart/VectorField",
+		"utils/math.js"
 	],
 	"exclude": ["node_modules"]
 }
