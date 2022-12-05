@@ -7,6 +7,8 @@ function distance(boid1, boid2) {
 	return Math.sqrt((boid1.x - boid2.x) * (boid1.x - boid2.x) + (boid1.y - boid2.y) * (boid1.y - boid2.y));
 }
 
+// Implements Ben Eater's boids as an ES6 Class.
+// Key difference between the Flock/Boid and the Field/Sprite relationship is that our Flock controls movement for each Boid, since movement requires an awareness of other Boids
 class Flock {
 	context: CanvasRenderingContext2D;
 	boids: Boid[];
@@ -109,6 +111,20 @@ class Flock {
 		boid.dy += moveY * avoidFactor;
 	}
 
+	avoidScreenCenter(boid: Boid) {
+		const minDistance = 75;
+		const avoidFactor = 1;
+		let moveX = 0;
+		let moveY = 0;
+
+		if (distance(boid, { x: this.width / 2, y: this.height / 2 }) < minDistance) {
+			moveX += boid.x - this.width / 2;
+			moveY += boid.y - this.height / 2;
+		}
+		boid.dx += moveX * avoidFactor;
+		boid.dy += moveY * avoidFactor;
+	}
+
 	// Find the average velocity (speed and direction) of the other boids and
 	// adjust velocity slightly to match.
 	matchVelocity(boid: Boid) {
@@ -152,7 +168,7 @@ class Flock {
 		ctx.translate(boid.x, boid.y);
 		ctx.rotate(angle);
 		ctx.translate(-boid.x, -boid.y);
-		ctx.fillStyle = COLORS['rainbow'](angle, [0, 90]);
+		ctx.fillStyle = COLORS['rainbow'](angle, [0, 2 * Math.PI]);
 		ctx.beginPath();
 		ctx.arc(boid.x, boid.y, 8, 0, 2 * Math.PI);
 		// ctx.moveTo(boid.x, boid.y);
@@ -180,6 +196,7 @@ class Flock {
 				// Update the velocities according to each rule
 				this.flyTowardsCenter(boid);
 				this.avoidOthers(boid);
+				this.avoidScreenCenter(boid);
 				this.matchVelocity(boid);
 				this.limitSpeed(boid);
 				this.keepWithinBounds(boid);

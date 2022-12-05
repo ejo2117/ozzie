@@ -36,7 +36,7 @@ const Canvas = () => {
 				new Flock({
 					context: canvasRef.current.getContext('2d'),
 					numBoids: 200,
-					visualRange: 15,
+					visualRange: 75,
 					trail: false,
 					width: window.innerWidth,
 					height: window.innerHeight,
@@ -50,7 +50,7 @@ const Canvas = () => {
 
 	return (
 		<>
-			<button id='openControls'>Controls</button>
+			{/* <button id='openControls'>Controls</button>
 			<section id='controls' data-visible='false'>
 				<select name='theme'>
 					<option value='rainbow'>Rainbow</option>
@@ -61,7 +61,7 @@ const Canvas = () => {
 					<option value='prep'>Prep</option>
 				</select>
 				<input type={'number'} defaultValue={120} placeholder='BPM'></input>
-			</section>
+			</section> */}
 			<canvas ref={canvasRef}></canvas>
 		</>
 	);
