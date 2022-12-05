@@ -10,6 +10,10 @@ const randomArbitrary = (min = 0, max = 1) => {
 
 const randomlyNegative = () => (Math.random() > 0.5 ? 1 : -1);
 
+function distance({ x0, y0 }, { x1, y1 }) {
+	return Math.sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1));
+}
+
 const PI = Math.PI;
 
-export { randomInt, randomArbitrary, randomlyNegative, PI };
+export { randomInt, randomArbitrary, randomlyNegative, PI, distance };

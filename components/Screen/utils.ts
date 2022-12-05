@@ -28,7 +28,7 @@ const COLORS = {
 const ingestCSV = async (pathToFile = './wind.csv') => {
 	const csv = await d3.csv<keyof WindPoint>(pathToFile);
 	const parsed = csv.slice(0, csv.length - 1).reduce((result, current, i) => {
-		if (!(i % 4)) {
+		if (!(i % 12)) {
 			result.push({
 				longitude: +current.longitude!,
 				latitude: +current.latitude!,

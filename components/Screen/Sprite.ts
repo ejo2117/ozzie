@@ -76,17 +76,18 @@ class Sprite {
 	generateLissajousMovement(dx: number, dy: number, tx: number, ty: number) {
 		return (t: number) =>
 			[
-				[this.previousPosition[0] + dx * Math.sin(tx * t), this.previousPosition[1] + dy * Math.sin(ty * t)],
+				[this.previousPosition[0] + dx * Math.sin((tx * t) / 2), this.previousPosition[1] + dy * Math.cos((ty * t) / 4)],
 				t,
 			] as TemporalPoint;
 	}
 
 	drawCircle([x, y]: Position, t: number) {
 		const BEAT_AGGRESSION = 3;
-		const BEAT = getBeatAlignment(this.bpm, t) * BEAT_AGGRESSION;
+		const BEAT_COEFFICIENT = 0.5;
+		const BEAT = getBeatAlignment(this.bpm / 2, t) * BEAT_AGGRESSION * BEAT_COEFFICIENT;
 		const RADIUS = this.radius + this.radius * BEAT;
 		const ACCELERATION = (y - this.previousPosition[1]) / (x - this.previousPosition[0]);
-		const HUE = Math.tan(t);
+		const HUE = Math.sin(t);
 
 		// this.context.translate(x, y);
 

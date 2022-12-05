@@ -103,7 +103,7 @@ class SpriteField {
 		}
 
 		this.context.fillStyle = getUserTheme().includes('l') ? '#fff' : '#000';
-		this.context.fillRect(0, 0, this.width, this.height);
+		this.context.clearRect(0, 0, this.width, this.height);
 
 		now = performance.now();
 
