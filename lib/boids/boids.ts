@@ -1,3 +1,4 @@
+//@ts-nocheck
 // Copyright (c) 2020 Ben Eater
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -233,3 +234,5 @@ window.onload = () => {
 	// Schedule the main animation loop
 	window.requestAnimationFrame(animationLoop);
 };
+
+export {};
