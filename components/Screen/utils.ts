@@ -16,6 +16,10 @@ const COLORS = {
 	furnace: (x: number, range: [number, number]) =>
 		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#233D4D', '#FE7F2D'))(x),
 	red: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#DE9151', '#F34213'))(x),
+	mint: (x: number, range: [number, number]) =>
+		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#040403', '#9DDBAD'))(x),
+	prep: (x: number, range: [number, number]) =>
+		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#2EC0F9', '#A63A50'))(x),
 };
 
 /*-- FUNCTIONS --*/
@@ -24,7 +28,7 @@ const COLORS = {
 const ingestCSV = async (pathToFile = './wind.csv') => {
 	const csv = await d3.csv<keyof WindPoint>(pathToFile);
 	const parsed = csv.slice(0, csv.length - 1).reduce((result, current, i) => {
-		if (!(i % 16)) {
+		if (!(i % 4)) {
 			result.push({
 				longitude: +current.longitude!,
 				latitude: +current.latitude!,

@@ -15,7 +15,7 @@ const Canvas = () => {
 					canvas: canvasRef.current,
 					data: points,
 					width: 950,
-					theme: 'blackwhite',
+					theme: 'red',
 					bpm: 120,
 				});
 			}
@@ -23,7 +23,22 @@ const Canvas = () => {
 		setup();
 	}, [canvasRef.current]);
 
-	return <canvas ref={canvasRef}></canvas>;
+	return (
+		<>
+			<button id='openControls'>Controls</button>
+			<section id='controls' data-visible='false'>
+				<select name='theme'>
+					<option value='rainbow'>Rainbow</option>
+					<option value='blackwhite'>Black & White</option>
+					<option value='furnace'>Furnace</option>
+					<option value='red'>Red</option>
+					<option value='mint'>Mint</option>
+					<option value='prep'>Prep</option>
+				</select>
+			</section>
+			<canvas ref={canvasRef}></canvas>
+		</>
+	);
 };
 
 export default Canvas;

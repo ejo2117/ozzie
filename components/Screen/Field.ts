@@ -1,6 +1,16 @@
 import { NormalizedWindPoint } from '@lib/types';
+import { randomInt } from '../../utils/math';
+import Controller from './Controller';
 import Sprite from './Sprite';
 import { COLORS, getProjectionBounds, getUserTheme, ingestCSV, randomLissajousArgs, scaleContextForData } from './utils';
+
+type FieldConfig = {
+	width: number;
+	height: number;
+
+	theme: keyof typeof COLORS;
+	bpm: number;
+};
 
 class SpriteField {
 	width: number;
@@ -17,7 +27,9 @@ class SpriteField {
 	// configurable
 	theme: keyof typeof COLORS;
 	bpm: number;
-	bounds: { bounds: [[number, number], [number, number]]; translationOffset: [number, number] };
+	// bounds: { bounds: [[number, number], [number, number]]; translationOffset: [number, number] };
+
+	controller: Controller;
 
 	constructor({ canvas, data, width, theme, bpm }: Pick<SpriteField, 'canvas' | 'data' | 'width' | 'theme' | 'bpm'>) {
 		this.canvas = canvas;
@@ -31,8 +43,9 @@ class SpriteField {
 
 		this.sprites = this.createSprites();
 		// this.animate();
-		window.requestAnimationFrame(() => this.animate());
-		console.log(this);
+		this.animationId = window.requestAnimationFrame(() => this.animate());
+
+		this.controller = new Controller({ field: this, sprite: {} as Sprite });
 	}
 
 	getBoundsFromData(points, width) {
@@ -50,7 +63,7 @@ class SpriteField {
 	}
 
 	createSprites() {
-		const sprites = [];
+		const sprites = [] as Sprite[];
 		const createdAt = performance.now();
 
 		for (let i = 0; i < this.data.length; i++) {
@@ -58,17 +71,28 @@ class SpriteField {
 			sprites.push(
 				new Sprite(
 					{
-						weight: element.dir,
+						weight: element.dirCat,
+						speed: element.speed,
 						created: createdAt,
 						behavior: randomLissajousArgs(100, 100, 5, 2),
 						previousPosition: element.position,
 						scaleFactor: scaleContextForData(this.data)(null),
+						radius: randomInt(1, 5),
 					},
 					this
 				)
 			);
 		}
 		return sprites;
+	}
+
+	refreshSprites() {
+		const current = [...this.sprites];
+		const refreshed = this.createSprites().map((sprite, i) => ({
+			...sprite,
+			previousPosition: current[i].previousPosition,
+		})) as Sprite[];
+		this.sprites = refreshed;
 	}
 
 	animate() {

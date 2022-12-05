@@ -1,4 +1,5 @@
 import { Position } from '@lib/types';
+import { randomInt } from '../../utils/math';
 import { COLORS, getBeatAlignment, scaleContextForData } from './utils';
 
 type TemporalPoint = [Position, number];
@@ -15,6 +16,8 @@ class Sprite {
 	context: CanvasRenderingContext2D;
 	created: number;
 	weight: number;
+	speed: number;
+	radius: number;
 	bpm: number;
 	behavior: [number, number, number, number];
 	previousPosition: Position;
@@ -26,12 +29,14 @@ class Sprite {
 	scaleFactor: number;
 
 	constructor(
-		{ scaleFactor, weight, created = performance.now(), previousPosition = [0, 0], behavior }: Partial<Sprite>,
+		{ scaleFactor, weight, created = performance.now(), previousPosition = [0, 0], behavior, speed, radius }: Partial<Sprite>,
 		{ context, bpm, theme }: FieldConfig
 	) {
 		this.weight = weight;
+		this.speed = speed;
 		this.created = created;
 		this.scaleFactor = scaleFactor;
+		this.radius = radius;
 
 		this.context = context;
 		this.bpm = bpm;
@@ -71,17 +76,17 @@ class Sprite {
 	generateLissajousMovement(dx: number, dy: number, tx: number, ty: number) {
 		return (t: number) =>
 			[
-				[this.previousPosition[0] + dx * Math.sin(tx * t), this.previousPosition[1] + dy * Math.cos(ty * t)],
+				[this.previousPosition[0] + dx * Math.sin(tx * t), this.previousPosition[1] + dy * Math.sin(ty * t)],
 				t,
 			] as TemporalPoint;
 	}
 
 	drawCircle([x, y]: Position, t: number) {
-		const BEAT_AGGRESSION = 10;
+		const BEAT_AGGRESSION = 3;
 		const BEAT = getBeatAlignment(this.bpm, t) * BEAT_AGGRESSION;
-		const RADIUS = BEAT * 1 + 5;
-		// const ACCELERATION = (y - this.previousPosition[1]) / (x - this.previousPosition[0]);
-		const HUE = Math.sin(t) * 1;
+		const RADIUS = this.radius + this.radius * BEAT;
+		const ACCELERATION = (y - this.previousPosition[1]) / (x - this.previousPosition[0]);
+		const HUE = Math.tan(t);
 
 		// this.context.translate(x, y);
 
@@ -89,7 +94,7 @@ class Sprite {
 		this.context.beginPath();
 		this.context.arc(x, y, RADIUS, 0, 2 * Math.PI);
 		this.context.closePath();
-		this.context.fillStyle = COLORS[this.theme](HUE, [0, 1]);
+		this.context.fillStyle = COLORS[this.theme](HUE, [0, 2]);
 		this.context.fill();
 		this.context.restore();
 	}

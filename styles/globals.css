@@ -28,6 +28,40 @@ a {
 	inset: 0;
 } */
 
+button#openControls {
+	position: absolute;
+	top: 16px;
+	left: 50%;
+	translate: -50% 0%;
+}
+
+section#controls {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	translate: -50% -50%;
+
+	height: 250px;
+	width: 400px;
+	background-color: white;
+	border-radius: 16px;
+	padding: 16px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	z-index: 100;
+}
+
+section#controls[data-visible='true'] {
+	visibility: visible;
+}
+
+section#controls[data-visible='false'] {
+	visibility: hidden;
+}
+
 @media (prefers-color-scheme: dark) {
 	html {
 		color-scheme: dark;
