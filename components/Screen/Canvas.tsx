@@ -15,7 +15,8 @@ const Canvas = () => {
 					canvas: canvasRef.current,
 					data: points,
 					width: 950,
-					theme: 'rainbow',
+					theme: 'blackwhite',
+					bpm: 120,
 				});
 			}
 		};

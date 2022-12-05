@@ -77,11 +77,11 @@ class Sprite {
 	}
 
 	drawCircle([x, y]: Position, t: number) {
-		const BEAT_AGGRESSION = 1.25;
+		const BEAT_AGGRESSION = 10;
 		const BEAT = getBeatAlignment(this.bpm, t) * BEAT_AGGRESSION;
 		const RADIUS = BEAT * 1 + 5;
-		const ACCELERATION = (y - this.previousPosition[1]) / (x - this.previousPosition[0]);
-		const HUE = ACCELERATION;
+		// const ACCELERATION = (y - this.previousPosition[1]) / (x - this.previousPosition[0]);
+		const HUE = Math.sin(t) * 1;
 
 		// this.context.translate(x, y);
 
@@ -89,7 +89,7 @@ class Sprite {
 		this.context.beginPath();
 		this.context.arc(x, y, RADIUS, 0, 2 * Math.PI);
 		this.context.closePath();
-		this.context.fillStyle = COLORS[this.theme](HUE, [-1, 1]);
+		this.context.fillStyle = COLORS[this.theme](HUE, [0, 1]);
 		this.context.fill();
 		this.context.restore();
 	}

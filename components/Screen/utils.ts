@@ -24,7 +24,7 @@ const COLORS = {
 const ingestCSV = async (pathToFile = './wind.csv') => {
 	const csv = await d3.csv<keyof WindPoint>(pathToFile);
 	const parsed = csv.slice(0, csv.length - 1).reduce((result, current, i) => {
-		if (!(i % 4)) {
+		if (!(i % 16)) {
 			result.push({
 				longitude: +current.longitude!,
 				latitude: +current.latitude!,
@@ -92,8 +92,8 @@ const randomLissajousArgs = (maxWidth: number, maxHeight: number, tx: number, ty
 	return [
 		randomInt(100, maxWidth) * randomlyNegative(),
 		randomInt(100, maxHeight) * randomlyNegative(),
-		randomArbitrary(1, tx),
-		randomArbitrary(1, ty),
+		randomArbitrary(tx, tx) * randomlyNegative(),
+		randomArbitrary(tx, ty) * randomlyNegative(),
 	] as [number, number, number, number];
 };
 

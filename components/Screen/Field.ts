@@ -16,13 +16,14 @@ class SpriteField {
 
 	// configurable
 	theme: keyof typeof COLORS;
-	bpm?: number;
+	bpm: number;
 	bounds: { bounds: [[number, number], [number, number]]; translationOffset: [number, number] };
 
-	constructor({ canvas, data, width, theme }: Pick<SpriteField, 'canvas' | 'data' | 'width' | 'theme'>) {
+	constructor({ canvas, data, width, theme, bpm }: Pick<SpriteField, 'canvas' | 'data' | 'width' | 'theme' | 'bpm'>) {
 		this.canvas = canvas;
 		this.context = canvas.getContext('2d');
 		this.theme = theme;
+		this.bpm = bpm;
 
 		this.data = data;
 		this.width = width;
@@ -52,14 +53,6 @@ class SpriteField {
 		const sprites = [];
 		const createdAt = performance.now();
 
-		const parentField = {
-			context: this.context,
-			height: this.height,
-			width: this.width,
-			bpm: 120,
-			theme: this.theme,
-		};
-
 		for (let i = 0; i < this.data.length; i++) {
 			const element = this.data[i];
 			sprites.push(
@@ -67,11 +60,11 @@ class SpriteField {
 					{
 						weight: element.dir,
 						created: createdAt,
-						behavior: randomLissajousArgs(1, 1, 2, 2),
+						behavior: randomLissajousArgs(100, 100, 5, 2),
 						previousPosition: element.position,
 						scaleFactor: scaleContextForData(this.data)(null),
 					},
-					parentField
+					this
 				)
 			);
 		}
@@ -85,7 +78,7 @@ class SpriteField {
 			return;
 		}
 
-		this.context.fillStyle = getUserTheme().includes('l') ? '#000' : '#000';
+		this.context.fillStyle = getUserTheme().includes('l') ? '#fff' : '#000';
 		this.context.fillRect(0, 0, this.width, this.height);
 
 		now = performance.now();
