@@ -29,7 +29,7 @@ const Field = () => {
 	// Create Sprites
 	useEffect(() => {
 		if (context) {
-			const results = [];
+			const results = [] as Sprite[];
 			const createdAt = performance.now();
 			for (let i = 0; i < 1; i++) {
 				results.push(new Sprite({ context, weight: 4, bpm: 120, created: createdAt }));

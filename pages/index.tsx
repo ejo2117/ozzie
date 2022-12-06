@@ -6,6 +6,7 @@ import Canvas from '../components/Screen/Canvas';
 import Field from '../components/Screen/Field';
 import Sticker from '../components/Sticker';
 import styles from '../styles/Home.module.css';
+import React from 'react';
 
 // basic commit
 const Home: NextPage = () => {
@@ -25,7 +26,7 @@ const Home: NextPage = () => {
 			</Head>
 
 			<main className={styles.main}>
-				<Sticker />
+				{/* <Sticker /> */}
 				<Canvas />
 			</main>
 		</div>
