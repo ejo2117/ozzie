@@ -22,7 +22,7 @@ const Field = () => {
 
 	// Setup Canvas on Mount and set Context
 	useEffect(() => {
-		const setupCanvas = async canvas => {
+		const setupCanvas = async () => {
 			console.log('setup canvas.');
 			const points = await ingestCSV();
 
