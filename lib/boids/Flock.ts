@@ -1,6 +1,9 @@
-import { ExcludeMethods } from '@lib/types';
-import { COLORS, getBeatAlignment } from '../../components/Screen/utils';
+import { ExcludeMethods, Position } from '../types';
+import { COLORS, getBeatAlignment, randomLissajousArgs } from '../../components/Screen/utils';
 import Boid from './Boid';
+import React from 'react';
+import Sprite from '../../components/Screen/Sprite';
+import Controller from '../../components/Screen/Controller';
 const DRAW_TRAIL = false;
 
 function distance(boid1, boid2) {
@@ -8,7 +11,10 @@ function distance(boid1, boid2) {
 }
 
 // Implements Ben Eater's boids as an ES6 Class.
-// Key difference between the Flock/Boid and the Field/Sprite relationship is that our Flock controls movement for each Boid, since movement requires an awareness of other Boids
+//
+// The key difference between the Flock/Boid and the Field/Sprite relationship
+// is that our Flock controls movement for each Boid, since movement requires an awareness of other Boids,
+// whereas each Sprite is responsible for its own movement behavior
 class Flock {
 	context: CanvasRenderingContext2D;
 	boids: Boid[];
@@ -17,22 +23,72 @@ class Flock {
 	trail: boolean;
 	width: number;
 	height: number;
+	foci: Sprite;
+	animationId: number;
+	theme: keyof typeof COLORS;
+	bpm: number;
 
-	constructor({ context, numBoids, visualRange, trail, width, height }: Omit<ExcludeMethods<Flock>, 'boids'>) {
+	controller: Controller;
+	obstacle: Position;
+
+	constructor({
+		context,
+		numBoids,
+		visualRange,
+		trail,
+		width,
+		height,
+		theme,
+		bpm,
+	}: Omit<ExcludeMethods<Flock>, 'boids' | 'foci' | 'animationId' | 'controller' | 'obstacle'>) {
 		this.trail = trail;
 		this.numBoids = numBoids;
 		this.visualRange = visualRange;
 		this.width = width;
 		this.height = height;
-		this.boids = this.initBoids();
 		this.context = context;
+		this.theme = theme;
+		this.bpm = bpm;
 
-		window.requestAnimationFrame(() => this.animate());
+		this.foci = this.initFoci();
+		this.obstacle = this.foci.previousPosition;
+
+		this.boids = this.initBoids();
+
+		this.controller = new Controller({ field: this, sprite: {} as Sprite });
+
+		this.animationId = window.requestAnimationFrame(() => this.animate());
+
+		window.addEventListener('resize', this.resize);
+
+		return this;
+	}
+
+	initFoci(numFoci = 1) {
+		const createdAt = performance.now();
+		return new Sprite(
+			{
+				weight: 10,
+				speed: 10,
+				created: createdAt,
+				behavior: [150, 150, 5, 2],
+				previousPosition: [this.width / 2, this.height / 2],
+				scaleFactor: 0.4,
+				radius: 20,
+			},
+			{
+				context: this.context,
+				height: this.height,
+				width: this.width,
+				bpm: 125,
+				theme: this.theme,
+			}
+		);
 	}
 
 	initBoids() {
-		const result = [];
-		for (var i = 0; i < this.numBoids; i += 1) {
+		const result: Boid[] = [];
+		for (let i = 0; i < this.numBoids; i += 1) {
 			result.push(
 				new Boid({
 					x: Math.random() * this.width,
@@ -68,11 +124,13 @@ class Flock {
 
 	// Find the center of mass of the other boids and adjust velocity slightly to
 	// point towards the center of mass.
-	flyTowardsCenter(boid: Boid) {
+	flyTowardsCenter(boid: Boid, center?: Position) {
 		const centeringFactor = 0.005; // adjust velocity by this %
 
-		let centerX = 0;
-		let centerY = 0;
+		const target = center ?? [0, 0];
+
+		let centerX = target[0];
+		let centerY = target[1];
 		let numNeighbors = 0;
 
 		for (let otherBoid of this.boids) {
@@ -111,15 +169,17 @@ class Flock {
 		boid.dy += moveY * avoidFactor;
 	}
 
-	avoidScreenCenter(boid: Boid) {
+	// Move away from an obstacle that has its own movement behavior
+	avoidSprite(boid: Boid, focalPoint?: Sprite) {
+		const obstacle = this.obstacle ?? [this.width / 2, this.height / 2];
 		const minDistance = 75;
 		const avoidFactor = 1;
 		let moveX = 0;
 		let moveY = 0;
 
-		if (distance(boid, { x: this.width / 2, y: this.height / 2 }) < minDistance) {
-			moveX += boid.x - this.width / 2;
-			moveY += boid.y - this.height / 2;
+		if (distance(boid, { x: obstacle[0], y: obstacle[1] }) < minDistance) {
+			moveX += boid.x - obstacle[0];
+			moveY += boid.y - obstacle[1];
 		}
 		boid.dx += moveX * avoidFactor;
 		boid.dy += moveY * avoidFactor;
@@ -168,7 +228,7 @@ class Flock {
 		ctx.translate(boid.x, boid.y);
 		ctx.rotate(angle);
 		ctx.translate(-boid.x, -boid.y);
-		ctx.fillStyle = COLORS['rainbow'](angle, [0, 2 * Math.PI]);
+		ctx.fillStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 4]);
 		ctx.beginPath();
 		ctx.arc(boid.x, boid.y, 8, 0, 2 * Math.PI);
 		// ctx.moveTo(boid.x, boid.y);
@@ -179,7 +239,8 @@ class Flock {
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 
 		if (this.trail) {
-			ctx.strokeStyle = COLORS['rainbow'](boid.history.length, [0, 50]);
+			ctx.strokeStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 2]);
+			ctx.lineWidth = 5;
 			ctx.beginPath();
 			ctx.moveTo(boid.history[0][0], boid.history[0][1]);
 			for (const point of boid.history) {
@@ -191,12 +252,14 @@ class Flock {
 
 	animate() {
 		if (this) {
+			const now = performance.now();
 			// Update each boid
 			for (let boid of this.boids) {
 				// Update the velocities according to each rule
+				// this.flyTowardsCenter(boid, this.obstacle);
 				this.flyTowardsCenter(boid);
 				this.avoidOthers(boid);
-				this.avoidScreenCenter(boid);
+				this.avoidSprite(boid);
 				this.matchVelocity(boid);
 				this.limitSpeed(boid);
 				this.keepWithinBounds(boid);
@@ -213,9 +276,43 @@ class Flock {
 			for (let boid of this.boids) {
 				this.drawBoid(this.context, boid);
 			}
+			this.obstacle = this.foci.render(this.foci.move((now - this.foci.created) / 1000));
 		}
 		// Schedule the next frame
 		window.requestAnimationFrame(() => this.animate());
+	}
+
+	resize() {
+		const width = window.innerWidth;
+		const height = window.innerHeight;
+		this.width = width;
+		this.height = height;
+	}
+
+	refreshSprites() {
+		const current = this.foci ?? { previousPosition: [0, 0] };
+		console.log(current);
+
+		const refreshed = new Sprite(
+			{
+				weight: 10,
+				speed: 10,
+				created: performance.now(),
+				behavior: [this.width / 2 - 32, this.height / 2 - 16, 4, 2],
+				previousPosition: [this.width / 2, this.height / 2],
+				scaleFactor: 0.4,
+				radius: 20,
+			},
+			{
+				context: this.context,
+				height: this.height,
+				width: this.width,
+				bpm: 125,
+				theme: this.theme,
+			}
+		);
+
+		this.foci = refreshed;
 	}
 }
 

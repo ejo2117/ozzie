@@ -52,6 +52,7 @@ class Sprite {
 	generateRenderer() {
 		return ([position, time]: TemporalPoint) => {
 			this.drawCircle(position, time);
+			// this.previousPosition = position;
 			// For debugging
 			return position;
 		};
@@ -91,11 +92,11 @@ class Sprite {
 
 		// this.context.translate(x, y);
 
-		this.context.scale(this.scaleFactor, this.scaleFactor);
+		// this.context.scale(this.scaleFactor, this.scaleFactor);
 		this.context.beginPath();
 		this.context.arc(x, y, RADIUS, 0, 2 * Math.PI);
 		this.context.closePath();
-		this.context.fillStyle = COLORS[this.theme](HUE, [0, 2]);
+		this.context.fillStyle = COLORS[this.theme](HUE, [0, 1]);
 		this.context.fill();
 		this.context.restore();
 	}

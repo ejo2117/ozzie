@@ -1,4 +1,4 @@
-import { NormalizedWindPoint } from '@lib/types';
+import { NormalizedWindPoint } from '../../lib/types';
 import { randomInt } from '../../utils/math';
 import Controller from './Controller';
 import Sprite from './Sprite';
@@ -33,7 +33,7 @@ class SpriteField {
 
 	constructor({ canvas, data, width, theme, bpm }: Pick<SpriteField, 'canvas' | 'data' | 'width' | 'theme' | 'bpm'>) {
 		this.canvas = canvas;
-		this.context = canvas.getContext('2d');
+		this.context = canvas.getContext('2d')!;
 		this.theme = theme;
 		this.bpm = bpm;
 
@@ -45,6 +45,7 @@ class SpriteField {
 		// this.animate();
 		this.animationId = window.requestAnimationFrame(() => this.animate());
 
+		//@ts-ignore
 		this.controller = new Controller({ field: this, sprite: {} as Sprite });
 	}
 
@@ -76,7 +77,7 @@ class SpriteField {
 						created: createdAt,
 						behavior: randomLissajousArgs(100, 100, 5, 2),
 						previousPosition: element.position,
-						scaleFactor: scaleContextForData(this.data)(null),
+						scaleFactor: scaleContextForData(this.data)(element.speed),
 						radius: randomInt(1, 5),
 					},
 					this

@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import SpriteField from './Field';
 import { COLORS, ingestCSV } from './utils';
 import Flock from '@lib/boids/Flock';
@@ -17,13 +17,20 @@ const sizeCanvas = canvas => {
 	canvas.height = height;
 };
 
-const Canvas = () => {
+const Canvas = props => {
 	const canvasRef = useRef<HTMLCanvasElement>();
+	const animationIdRef = useRef<number>();
 
 	useEffect(() => {
 		const setup = async () => {
 			if (canvasRef.current) {
-				window.addEventListener('resize', sizeCanvas, false);
+				window.addEventListener(
+					'resize',
+					() => {
+						sizeCanvas(canvasRef.current);
+					},
+					false
+				);
 				sizeCanvas(canvasRef.current);
 				// const points = await ingestCSV();
 				// new SpriteField({
@@ -33,24 +40,32 @@ const Canvas = () => {
 				// 	theme: 'red',
 				// 	bpm: 120,
 				// });
-				new Flock({
+				const flock = new Flock({
 					context: canvasRef.current.getContext('2d'),
-					numBoids: 200,
+					numBoids: 100,
 					visualRange: 75,
 					trail: false,
-					width: window.innerWidth,
-					height: window.innerHeight,
+					width: canvasRef.current.width,
+					height: canvasRef.current.height,
+					theme: 'rainbow',
+					bpm: 125,
 				});
+
+				animationIdRef.current = flock.animationId;
 
 				// window.requestAnimationFrame(() => flock.animate());
 			}
 		};
 		setup();
+
+		return () => window.cancelAnimationFrame(animationIdRef.current);
 	}, [canvasRef.current]);
 
 	return (
 		<>
-			{/* <button id='openControls'>Controls</button>
+			<button id='openControls' style={{ display: 'none' }}>
+				Controls
+			</button>
 			<section id='controls' data-visible='false'>
 				<select name='theme'>
 					<option value='rainbow'>Rainbow</option>
@@ -61,7 +76,9 @@ const Canvas = () => {
 					<option value='prep'>Prep</option>
 				</select>
 				<input type={'number'} defaultValue={120} placeholder='BPM'></input>
-			</section> */}
+				<input id='trails' type={'checkbox'}></input>
+				<label htmlFor='trails'>Show Trails?</label>
+			</section>
 			<canvas ref={canvasRef}></canvas>
 		</>
 	);
