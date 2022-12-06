@@ -1,6 +1,7 @@
-import { ExcludeMethods } from '@lib/types';
+import { ExcludeMethods, Position } from '../types';
 import { COLORS, getBeatAlignment } from '../../components/Screen/utils';
 import Boid from './Boid';
+import React from 'react';
 const DRAW_TRAIL = false;
 
 function distance(boid1, boid2) {
@@ -8,7 +9,10 @@ function distance(boid1, boid2) {
 }
 
 // Implements Ben Eater's boids as an ES6 Class.
-// Key difference between the Flock/Boid and the Field/Sprite relationship is that our Flock controls movement for each Boid, since movement requires an awareness of other Boids
+//
+// The key difference between the Flock/Boid and the Field/Sprite relationship
+// is that our Flock controls movement for each Boid, since movement requires an awareness of other Boids,
+// whereas each Sprite is responsible for its own movement behavior
 class Flock {
 	context: CanvasRenderingContext2D;
 	boids: Boid[];
@@ -31,7 +35,7 @@ class Flock {
 	}
 
 	initBoids() {
-		const result = [];
+		const result: Boid[] = [];
 		for (var i = 0; i < this.numBoids; i += 1) {
 			result.push(
 				new Boid({
@@ -111,15 +115,17 @@ class Flock {
 		boid.dy += moveY * avoidFactor;
 	}
 
-	avoidScreenCenter(boid: Boid) {
+	// Move away from an obstacle that may have its own movement behavior
+	avoidSprite(boid: Boid, focalPoint?: Position) {
+		const obstacle = focalPoint ?? [this.width / 2, this.height / 2];
 		const minDistance = 75;
 		const avoidFactor = 1;
 		let moveX = 0;
 		let moveY = 0;
 
-		if (distance(boid, { x: this.width / 2, y: this.height / 2 }) < minDistance) {
-			moveX += boid.x - this.width / 2;
-			moveY += boid.y - this.height / 2;
+		if (distance(boid, { x: obstacle[0], y: obstacle[1] }) < minDistance) {
+			moveX += boid.x - obstacle[0];
+			moveY += boid.y - obstacle[1];
 		}
 		boid.dx += moveX * avoidFactor;
 		boid.dy += moveY * avoidFactor;
@@ -179,7 +185,7 @@ class Flock {
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 
 		if (this.trail) {
-			ctx.strokeStyle = COLORS['rainbow'](boid.history.length, [0, 50]);
+			ctx.strokeStyle = COLORS['rainbow'](angle, [0, 2 * Math.PI]);
 			ctx.beginPath();
 			ctx.moveTo(boid.history[0][0], boid.history[0][1]);
 			for (const point of boid.history) {
@@ -196,7 +202,7 @@ class Flock {
 				// Update the velocities according to each rule
 				this.flyTowardsCenter(boid);
 				this.avoidOthers(boid);
-				this.avoidScreenCenter(boid);
+				this.avoidSprite(boid);
 				this.matchVelocity(boid);
 				this.limitSpeed(boid);
 				this.keepWithinBounds(boid);

@@ -1,7 +1,7 @@
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import SpriteField from './Field';
 import { COLORS, ingestCSV } from './utils';
-import Flock from '@lib/boids/Flock';
+// import Flock from '@lib/boids/Flock';
 
 type CanvasProps = JSX.IntrinsicElements['canvas'] & {};
 
@@ -17,7 +17,7 @@ const sizeCanvas = canvas => {
 	canvas.height = height;
 };
 
-const Canvas = () => {
+const Canvas = props => {
 	const canvasRef = useRef<HTMLCanvasElement>();
 
 	useEffect(() => {
@@ -25,22 +25,22 @@ const Canvas = () => {
 			if (canvasRef.current) {
 				window.addEventListener('resize', sizeCanvas, false);
 				sizeCanvas(canvasRef.current);
-				// const points = await ingestCSV();
-				// new SpriteField({
-				// 	canvas: canvasRef.current,
-				// 	data: points,
-				// 	width: 950,
-				// 	theme: 'red',
-				// 	bpm: 120,
-				// });
-				new Flock({
-					context: canvasRef.current.getContext('2d'),
-					numBoids: 200,
-					visualRange: 75,
-					trail: false,
-					width: window.innerWidth,
-					height: window.innerHeight,
+				const points = await ingestCSV();
+				new SpriteField({
+					canvas: canvasRef.current,
+					data: points,
+					width: 950,
+					theme: 'red',
+					bpm: 120,
 				});
+				// new Flock({
+				// 	context: canvasRef.current.getContext('2d'),
+				// 	numBoids: 80,
+				// 	visualRange: 75,
+				// 	trail: false,
+				// 	width: window.innerWidth,
+				// 	height: window.innerHeight,
+				// });
 
 				// window.requestAnimationFrame(() => flock.animate());
 			}
@@ -50,7 +50,7 @@ const Canvas = () => {
 
 	return (
 		<>
-			{/* <button id='openControls'>Controls</button>
+			<button id='openControls'>Controls</button>
 			<section id='controls' data-visible='false'>
 				<select name='theme'>
 					<option value='rainbow'>Rainbow</option>
@@ -61,7 +61,7 @@ const Canvas = () => {
 					<option value='prep'>Prep</option>
 				</select>
 				<input type={'number'} defaultValue={120} placeholder='BPM'></input>
-			</section> */}
+			</section>
 			<canvas ref={canvasRef}></canvas>
 		</>
 	);
