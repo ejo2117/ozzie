@@ -23,9 +23,10 @@ class Flock {
 	trail: boolean;
 	width: number;
 	height: number;
-	foci: Sprite[];
+	foci: Sprite;
 	animationId: number;
 	theme: keyof typeof COLORS;
+	bpm: number;
 
 	controller: Controller;
 	obstacle: Position;
@@ -38,6 +39,7 @@ class Flock {
 		width,
 		height,
 		theme,
+		bpm,
 	}: Omit<ExcludeMethods<Flock>, 'boids' | 'foci' | 'animationId' | 'controller' | 'obstacle'>) {
 		this.trail = trail;
 		this.numBoids = numBoids;
@@ -46,9 +48,10 @@ class Flock {
 		this.height = height;
 		this.context = context;
 		this.theme = theme;
+		this.bpm = bpm;
 
-		this.foci = this.initFoci(1);
-		this.obstacle = this.foci[0].previousPosition;
+		this.foci = this.initFoci();
+		this.obstacle = this.foci.previousPosition;
 
 		this.boids = this.initBoids();
 
@@ -61,32 +64,26 @@ class Flock {
 		return this;
 	}
 
-	initFoci(numFoci) {
-		const result: Sprite[] = [];
+	initFoci(numFoci = 1) {
 		const createdAt = performance.now();
-		for (let i = 0; i < numFoci; i++) {
-			result.push(
-				new Sprite(
-					{
-						weight: 10,
-						speed: 10,
-						created: createdAt,
-						behavior: [150, 150, 5, 2],
-						previousPosition: [this.width / 2, this.height / 2],
-						scaleFactor: 0.4,
-						radius: 20,
-					},
-					{
-						context: this.context,
-						height: this.height,
-						width: this.width,
-						bpm: 125,
-						theme: this.theme,
-					}
-				)
-			);
-		}
-		return result;
+		return new Sprite(
+			{
+				weight: 10,
+				speed: 10,
+				created: createdAt,
+				behavior: [150, 150, 5, 2],
+				previousPosition: [this.width / 2, this.height / 2],
+				scaleFactor: 0.4,
+				radius: 20,
+			},
+			{
+				context: this.context,
+				height: this.height,
+				width: this.width,
+				bpm: 125,
+				theme: this.theme,
+			}
+		);
 	}
 
 	initBoids() {
@@ -175,7 +172,7 @@ class Flock {
 	// Move away from an obstacle that has its own movement behavior
 	avoidSprite(boid: Boid, focalPoint?: Sprite) {
 		const obstacle = this.obstacle ?? [this.width / 2, this.height / 2];
-		const minDistance = 100;
+		const minDistance = 75;
 		const avoidFactor = 1;
 		let moveX = 0;
 		let moveY = 0;
@@ -243,6 +240,7 @@ class Flock {
 
 		if (this.trail) {
 			ctx.strokeStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 2]);
+			ctx.lineWidth = 5;
 			ctx.beginPath();
 			ctx.moveTo(boid.history[0][0], boid.history[0][1]);
 			for (const point of boid.history) {
@@ -258,8 +256,8 @@ class Flock {
 			// Update each boid
 			for (let boid of this.boids) {
 				// Update the velocities according to each rule
+				// this.flyTowardsCenter(boid, this.obstacle);
 				this.flyTowardsCenter(boid);
-				// this.flyTowardsCenter(boid, this.foci[0].previousPosition);
 				this.avoidOthers(boid);
 				this.avoidSprite(boid);
 				this.matchVelocity(boid);
@@ -278,19 +276,43 @@ class Flock {
 			for (let boid of this.boids) {
 				this.drawBoid(this.context, boid);
 			}
-			this.obstacle = this.foci[0].render(this.foci[0].move((now - this.foci[0].created) / 1000));
+			this.obstacle = this.foci.render(this.foci.move((now - this.foci.created) / 1000));
 		}
 		// Schedule the next frame
 		window.requestAnimationFrame(() => this.animate());
 	}
 
 	resize() {
-		console.log('res');
-
 		const width = window.innerWidth;
 		const height = window.innerHeight;
 		this.width = width;
 		this.height = height;
+	}
+
+	refreshSprites() {
+		const current = this.foci ?? { previousPosition: [0, 0] };
+		console.log(current);
+
+		const refreshed = new Sprite(
+			{
+				weight: 10,
+				speed: 10,
+				created: performance.now(),
+				behavior: [this.width / 2 - 32, this.height / 2 - 16, 4, 2],
+				previousPosition: [this.width / 2, this.height / 2],
+				scaleFactor: 0.4,
+				radius: 20,
+			},
+			{
+				context: this.context,
+				height: this.height,
+				width: this.width,
+				bpm: 125,
+				theme: this.theme,
+			}
+		);
+
+		this.foci = refreshed;
 	}
 }
 

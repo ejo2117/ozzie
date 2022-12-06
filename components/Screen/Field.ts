@@ -45,6 +45,7 @@ class SpriteField {
 		// this.animate();
 		this.animationId = window.requestAnimationFrame(() => this.animate());
 
+		//@ts-ignore
 		this.controller = new Controller({ field: this, sprite: {} as Sprite });
 	}
 

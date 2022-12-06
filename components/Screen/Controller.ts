@@ -32,7 +32,7 @@ class Controller {
 
 	changeTheme(t: keyof typeof COLORS) {
 		this.field.theme = t;
-		// this.field.refreshSprites();
+		this.field.refreshSprites();
 		this.setVisibility(false);
 	}
 

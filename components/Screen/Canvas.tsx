@@ -48,6 +48,7 @@ const Canvas = props => {
 					width: canvasRef.current.width,
 					height: canvasRef.current.height,
 					theme: 'rainbow',
+					bpm: 125,
 				});
 
 				animationIdRef.current = flock.animationId;
