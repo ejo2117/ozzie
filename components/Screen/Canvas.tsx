@@ -44,7 +44,7 @@ const Canvas = props => {
 					context: canvasRef.current.getContext('2d'),
 					numBoids: 100,
 					visualRange: 75,
-					trail: true,
+					trail: false,
 					width: canvasRef.current.width,
 					height: canvasRef.current.height,
 					theme: 'rainbow',
@@ -63,7 +63,9 @@ const Canvas = props => {
 
 	return (
 		<>
-			<button id='openControls'>Controls</button>
+			<button id='openControls' style={{ display: 'none' }}>
+				Controls
+			</button>
 			<section id='controls' data-visible='false'>
 				<select name='theme'>
 					<option value='rainbow'>Rainbow</option>
@@ -74,7 +76,7 @@ const Canvas = props => {
 					<option value='prep'>Prep</option>
 				</select>
 				<input type={'number'} defaultValue={120} placeholder='BPM'></input>
-				<input id='trails' type={'checkbox'} defaultChecked></input>
+				<input id='trails' type={'checkbox'}></input>
 				<label htmlFor='trails'>Show Trails?</label>
 			</section>
 			<canvas ref={canvasRef}></canvas>
