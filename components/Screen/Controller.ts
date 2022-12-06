@@ -26,6 +26,7 @@ class Controller {
 
 		this.toggle.addEventListener('click', () => this.setVisibility(!this.visibility));
 		this.themeSelect.addEventListener('change', e => this.changeTheme(this.themeSelect.value as keyof typeof COLORS));
+		//@ts-ignore
 		this.trailsCheckbox.addEventListener('click', e => this.setTrails(e.target.checked));
 	}
 
