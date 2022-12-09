@@ -20,6 +20,10 @@ const COLORS = {
 		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#040403', '#9DDBAD'))(x),
 	prep: (x: number, range: [number, number]) =>
 		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#2EC0F9', '#A63A50'))(x),
+	cougar: (x: number, range: [number, number]) =>
+		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#FB8B24', '#D90368'))(x),
+	rose: (x: number, range: [number, number]) =>
+		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#FDE8E9', '#E3BAC6'))(x),
 };
 
 /*-- FUNCTIONS --*/
@@ -101,8 +105,11 @@ const randomLissajousArgs = (maxWidth: number, maxHeight: number, tx: number, ty
 	] as [number, number, number, number];
 };
 
+const randomFromArray = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
+
 export {
 	randomLissajousArgs,
+	randomFromArray,
 	getUserTheme,
 	scaleContextForData,
 	COLORS,

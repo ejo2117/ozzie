@@ -47,7 +47,7 @@ const Canvas = props => {
 					trail: false,
 					width: canvasRef.current.width,
 					height: canvasRef.current.height,
-					theme: 'rainbow',
+					theme: 'prep',
 					bpm: 125,
 				});
 
