@@ -253,9 +253,9 @@ class Flock {
 		if (this) {
 			const now = performance.now();
 
-			// Check time, and randomly update theme, etc. every 3 mins
-			if ((now - this.lastUpdate) / 1000 > 180) {
-				this.theme = randomFromArray(Object.keys(COLORS));
+			// Check time, and randomly update theme, etc. every 45 seconds
+			if ((now - this.lastUpdate) / 1000 > 45) {
+				this.theme = randomFromArray(Object.keys(COLORS).filter(t => t !== this.theme));
 				this.trail = !!randomInt(0, 1);
 				this.refreshSprites();
 				this.lastUpdate = now;
