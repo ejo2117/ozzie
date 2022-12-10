@@ -21,8 +21,7 @@ const Home: NextPage = () => {
 				<link rel='manifest' href='/site.webmanifest' />
 				<link rel='mask-icon' href='/safari-pinned-tab.svg' color='#2200ff' />
 				<meta name='msapplication-TileColor' content='#2d89ef' />
-				<meta name='theme-color' content='#ffffff' media='(prefers-color-scheme: light)' />
-				<meta name='theme-color' content='#000000' media='(prefers-color-scheme: dark)' />
+				<meta name='theme-color' content='#000000' />
 			</Head>
 
 			<main className={styles.main}>

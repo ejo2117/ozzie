@@ -1,9 +1,10 @@
 import { ExcludeMethods, Position } from '../types';
-import { COLORS, getBeatAlignment, randomLissajousArgs } from '../../components/Screen/utils';
+import { COLORS, getBeatAlignment, randomFromArray, randomLissajousArgs } from '../../components/Screen/utils';
 import Boid from './Boid';
 import React from 'react';
 import Sprite from '../../components/Screen/Sprite';
 import Controller from '../../components/Screen/Controller';
+import { randomInt } from '../../utils/math';
 const DRAW_TRAIL = false;
 
 function distance(boid1, boid2) {
@@ -30,6 +31,7 @@ class Flock {
 
 	controller: Controller;
 	obstacle: Position;
+	lastUpdate: number;
 
 	constructor({
 		context,
@@ -40,7 +42,7 @@ class Flock {
 		height,
 		theme,
 		bpm,
-	}: Omit<ExcludeMethods<Flock>, 'boids' | 'foci' | 'animationId' | 'controller' | 'obstacle'>) {
+	}: Omit<ExcludeMethods<Flock>, 'boids' | 'foci' | 'animationId' | 'controller' | 'obstacle' | 'lastUpdate'>) {
 		this.trail = trail;
 		this.numBoids = numBoids;
 		this.visualRange = visualRange;
@@ -49,6 +51,7 @@ class Flock {
 		this.context = context;
 		this.theme = theme;
 		this.bpm = bpm;
+		this.lastUpdate = performance.now();
 
 		this.foci = this.initFoci();
 		this.obstacle = this.foci.previousPosition;
@@ -231,10 +234,6 @@ class Flock {
 		ctx.fillStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 4]);
 		ctx.beginPath();
 		ctx.arc(boid.x, boid.y, 8, 0, 2 * Math.PI);
-		// ctx.moveTo(boid.x, boid.y);
-		// ctx.lineTo(boid.x - 15, boid.y + 5);
-		// ctx.lineTo(boid.x - 15, boid.y - 5);
-		// ctx.lineTo(boid.x, boid.y);
 		ctx.fill();
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -253,6 +252,15 @@ class Flock {
 	animate() {
 		if (this) {
 			const now = performance.now();
+
+			// Check time, and randomly update theme, etc. every 3 mins
+			if ((now - this.lastUpdate) / 1000 > 180) {
+				this.theme = randomFromArray(Object.keys(COLORS));
+				this.trail = !!randomInt(0, 1);
+				this.refreshSprites();
+				this.lastUpdate = now;
+			}
+
 			// Update each boid
 			for (let boid of this.boids) {
 				// Update the velocities according to each rule
@@ -290,15 +298,13 @@ class Flock {
 	}
 
 	refreshSprites() {
-		const current = this.foci ?? { previousPosition: [0, 0] };
-		console.log(current);
-
+		// const current = this.foci ?? { previousPosition: [0, 0] };
 		const refreshed = new Sprite(
 			{
 				weight: 10,
 				speed: 10,
 				created: performance.now(),
-				behavior: [this.width / 2 - 32, this.height / 2 - 16, 4, 2],
+				behavior: [this.width / 2 - 128, this.height / 2 - 128, 4, 2],
 				previousPosition: [this.width / 2, this.height / 2],
 				scaleFactor: 0.4,
 				radius: 20,

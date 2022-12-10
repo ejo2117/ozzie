@@ -9,20 +9,20 @@
 	padding: 112px 88px;
 	clip-path: ellipse(140px 100px);
 
-	@media (prefers-color-scheme: light) {
-		background-color: $black;
-		color: $white;
-		svg path {
-			fill: $white;
-		}
+	// @media (prefers-color-scheme: light) {
+	// 	background-color: $black;
+	// 	color: $white;
+	// 	svg path {
+	// 		fill: $white;
+	// 	}
+	// }
+	// @media (prefers-color-scheme: dark) {
+	background-color: $white;
+	color: $black;
+	svg path {
+		fill: $black;
 	}
-	@media (prefers-color-scheme: dark) {
-		background-color: $white;
-		color: $black;
-		svg path {
-			fill: $black;
-		}
-	}
+	// }
 
 	svg {
 		width: 180px;
