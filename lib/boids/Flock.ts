@@ -92,13 +92,15 @@ class Flock {
 	initBoids() {
 		const result: Boid[] = [];
 		for (let i = 0; i < this.numBoids; i += 1) {
+			const origin: Position = [Math.random() * this.width, Math.random() * this.height];
 			result.push(
 				new Boid({
-					x: Math.random() * this.width,
-					y: Math.random() * this.height,
+					x: origin[0],
+					y: origin[1],
 					dx: Math.random() * 10 - 5,
 					dy: Math.random() * 10 - 5,
 					history: [],
+					origin,
 				})
 			);
 		}
@@ -156,7 +158,7 @@ class Flock {
 	// Move away from other boids that are too close to avoid colliding
 	avoidOthers(boid: Boid) {
 		const minDistance = 20; // The distance to stay away from other boids
-		const avoidFactor = 0.05; // Adjust velocity by this %
+		const avoidFactor = 0.005; // Adjust velocity by this %
 		let moveX = 0;
 		let moveY = 0;
 		for (let otherBoid of this.boids) {
@@ -227,6 +229,10 @@ class Flock {
 	}
 
 	drawBoid(ctx: CanvasRenderingContext2D, boid: Boid) {
+		if (!boid?.origin) {
+			console.log(boid);
+		}
+
 		const angle = Math.atan2(boid.dy, boid.dx);
 		ctx.translate(boid.x, boid.y);
 		ctx.rotate(angle);
@@ -237,14 +243,24 @@ class Flock {
 		ctx.fill();
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-		if (this.trail) {
-			ctx.strokeStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 2]);
+		// if (this.trail) {
+		// 	ctx.strokeStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 2]);
+		// 	ctx.lineWidth = 5;
+		// 	ctx.beginPath();
+		// 	ctx.moveTo(boid.history[0][0], boid.history[0][1]);
+		// 	for (const point of boid.history) {
+		// 		ctx.lineTo(point[0], point[1]);
+		// 	}
+		// 	ctx.stroke();
+		// }
+
+		if (true) {
+			ctx.strokeStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 4]);
 			ctx.lineWidth = 5;
+			ctx.lineCap = 'round';
 			ctx.beginPath();
-			ctx.moveTo(boid.history[0][0], boid.history[0][1]);
-			for (const point of boid.history) {
-				ctx.lineTo(point[0], point[1]);
-			}
+			ctx.moveTo(boid.origin[0], boid.origin[1]);
+			ctx.lineTo(boid.x, boid.y);
 			ctx.stroke();
 		}
 	}
@@ -256,7 +272,7 @@ class Flock {
 			// Check time, and randomly update theme, etc. every 45 seconds
 			if ((now - this.lastUpdate) / 1000 > 45) {
 				this.theme = randomFromArray(Object.keys(COLORS).filter(t => t !== this.theme));
-				this.trail = !!randomInt(0, 1);
+				// this.trail = !!randomInt(0, 1);
 				this.refreshSprites();
 				this.lastUpdate = now;
 			}

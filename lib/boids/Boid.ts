@@ -6,12 +6,14 @@ class Boid {
 	dx: number;
 	dy: number;
 	history: Position[];
-	constructor({ x, y, dx, dy, history }: Boid) {
+	origin: Position;
+	constructor({ x, y, dx, dy, history, origin }: Boid) {
 		this.x = x;
 		this.y = y;
 		this.dx = dx;
 		this.dy = dy;
 		this.history = history;
+		this.origin = origin;
 	}
 }
 

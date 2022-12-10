@@ -42,9 +42,9 @@ const Canvas = props => {
 				// });
 				const flock = new Flock({
 					context: canvasRef.current.getContext('2d'),
-					numBoids: 100,
+					numBoids: 50,
 					visualRange: 75,
-					trail: false,
+					trail: true,
 					width: canvasRef.current.width,
 					height: canvasRef.current.height,
 					theme: 'rainbow',
@@ -63,9 +63,7 @@ const Canvas = props => {
 
 	return (
 		<>
-			<button id='openControls' style={{ display: 'none' }}>
-				Controls
-			</button>
+			<button id='openControls'>Controls</button>
 			<section id='controls' data-visible='false'>
 				<select name='theme'>
 					<option value='rainbow'>Rainbow</option>
