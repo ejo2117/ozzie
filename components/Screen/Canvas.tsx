@@ -32,7 +32,7 @@ const Canvas = props => {
 					false
 				);
 				sizeCanvas(canvasRef.current);
-				// const points = await ingestCSV();
+				const points = await ingestCSV();
 				// new SpriteField({
 				// 	canvas: canvasRef.current,
 				// 	data: points,
@@ -41,14 +41,15 @@ const Canvas = props => {
 				// 	bpm: 120,
 				// });
 				const flock = new Flock({
-					context: canvasRef.current.getContext('2d'),
-					numBoids: 50,
-					visualRange: 75,
-					trail: true,
-					width: canvasRef.current.width,
-					height: canvasRef.current.height,
-					theme: 'rainbow',
 					bpm: 125,
+					context: canvasRef.current.getContext('2d'),
+					height: canvasRef.current.height,
+					numBoids: 50,
+					points,
+					theme: 'rainbow',
+					trail: true,
+					visualRange: 75,
+					width: canvasRef.current.width,
 				});
 
 				animationIdRef.current = flock.animationId;
@@ -66,12 +67,17 @@ const Canvas = props => {
 			<button id='openControls'>Controls</button>
 			<section id='controls' data-visible='false'>
 				<select name='theme'>
-					<option value='rainbow'>Rainbow</option>
+					{Object.keys(COLORS).map(key => (
+						<option value={key} key={key}>
+							{key}
+						</option>
+					))}
+					{/* <option value='rainbow'>Rainbow</option>
 					<option value='blackwhite'>Black & White</option>
 					<option value='furnace'>Furnace</option>
 					<option value='red'>Red</option>
 					<option value='mint'>Mint</option>
-					<option value='prep'>Prep</option>
+					<option value='prep'>Prep</option> */}
 				</select>
 				<input type={'number'} defaultValue={120} placeholder='BPM'></input>
 				<input id='trails' type={'checkbox'}></input>

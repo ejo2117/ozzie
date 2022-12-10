@@ -1,4 +1,4 @@
-import { ExcludeMethods, Position } from '../types';
+import { ExcludeMethods, NormalizedWindPoint, Position, WindPoint } from '../types';
 import { COLORS, getBeatAlignment, randomFromArray, randomLissajousArgs } from '../../components/Screen/utils';
 import Boid from './Boid';
 import React from 'react';
@@ -33,17 +33,21 @@ class Flock {
 	obstacle: Position;
 	lastUpdate: number;
 
+	points: NormalizedWindPoint[];
+
 	constructor({
-		context,
-		numBoids,
-		visualRange,
-		trail,
-		width,
-		height,
-		theme,
 		bpm,
+		context,
+		height,
+		numBoids,
+		points,
+		theme,
+		trail,
+		visualRange,
+		width,
 	}: Omit<ExcludeMethods<Flock>, 'boids' | 'foci' | 'animationId' | 'controller' | 'obstacle' | 'lastUpdate'>) {
 		this.trail = trail;
+		this.points = points;
 		this.numBoids = numBoids;
 		this.visualRange = visualRange;
 		this.width = width;
@@ -101,6 +105,7 @@ class Flock {
 					dy: Math.random() * 10 - 5,
 					history: [],
 					origin,
+					windiness: this.points[i],
 				})
 			);
 		}
@@ -110,8 +115,8 @@ class Flock {
 	// Constrain a boid to within the window. If it gets too close to an edge,
 	// nudge it back in and reverse its direction.
 	keepWithinBounds(boid: Boid) {
-		const margin = 200;
-		const turnFactor = 1;
+		const margin = 0;
+		const turnFactor = 10;
 
 		if (boid.x < margin) {
 			boid.dx += turnFactor;
@@ -153,6 +158,28 @@ class Flock {
 			boid.dx += (centerX - boid.x) * centeringFactor;
 			boid.dy += (centerY - boid.y) * centeringFactor;
 		}
+	}
+
+	// Adjust velocity based on Wind
+	floatInWind(boid: Boid) {
+		const { speed, dir } = boid.windiness;
+		const centeringFactor = 0.001; // adjust velocity by this %
+
+		const radians = dir * (Math.PI / 180);
+
+		const destinationX = boid.x + Math.cos(radians) * speed * centeringFactor;
+		const destinationY = boid.y + Math.sin(radians) * speed * centeringFactor;
+
+		boid.dx += speed * Math.cos(radians);
+		boid.dy += speed * Math.sin(radians);
+		boid.x = destinationX;
+		boid.y = destinationY;
+
+		boid.windiness = {
+			...boid.windiness,
+			speed,
+			dir: Math.round(dir + 1) % 360,
+		};
 	}
 
 	// Move away from other boids that are too close to avoid colliding
@@ -261,6 +288,9 @@ class Flock {
 			ctx.beginPath();
 			ctx.moveTo(boid.origin[0], boid.origin[1]);
 			ctx.lineTo(boid.x, boid.y);
+			// ctx.lineTo(boid.x - 5, boid.y);
+			// ctx.arcTo(boid.x, boid.y, boid.x + 5, boid.y, 5);
+			// ctx.lineTo(boid.x + 5, boid.y);
 			ctx.stroke();
 		}
 	}
@@ -282,6 +312,7 @@ class Flock {
 				// Update the velocities according to each rule
 				// this.flyTowardsCenter(boid, this.obstacle);
 				this.flyTowardsCenter(boid);
+				this.floatInWind(boid);
 				this.avoidOthers(boid);
 				this.avoidSprite(boid);
 				this.matchVelocity(boid);
