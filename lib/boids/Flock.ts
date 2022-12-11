@@ -34,6 +34,7 @@ class Flock {
 	lastUpdate: number;
 
 	points: NormalizedWindPoint[];
+	trails: any;
 
 	constructor({
 		bpm,
@@ -43,10 +44,11 @@ class Flock {
 		points,
 		theme,
 		trail,
+		trails,
 		visualRange,
 		width,
 	}: Omit<ExcludeMethods<Flock>, 'boids' | 'foci' | 'animationId' | 'controller' | 'obstacle' | 'lastUpdate'>) {
-		this.trail = trail;
+		this.trails = trail && trails;
 		this.points = points;
 		this.numBoids = numBoids;
 		this.visualRange = visualRange;
@@ -67,6 +69,8 @@ class Flock {
 		this.animationId = window.requestAnimationFrame(() => this.animate());
 
 		window.addEventListener('resize', this.resize);
+
+		console.log(this);
 
 		return this;
 	}
@@ -93,10 +97,34 @@ class Flock {
 		);
 	}
 
+	createBoidOrigin(using: keyof typeof types, index: number) {
+		const { width, height } = this;
+		console.log(width, height);
+
+		const margin = 200;
+
+		const xAxis = Array(Math.floor(width / margin))
+			.fill(null)
+			.map((_, i) => i * margin);
+		const yAxis = Array(Math.floor(height / margin))
+			.fill(null)
+			.map((_, i) => i * margin);
+
+		const pointsWithinBounds = xAxis.flatMap(x => yAxis.map(y => [x, y] as Position));
+
+		const types = {
+			random: [Math.random() * width, Math.random() * height] as Position,
+			grid: pointsWithinBounds[index % pointsWithinBounds.length],
+			spiral: [] as unknown as Position,
+		};
+
+		return types[using];
+	}
+
 	initBoids() {
 		const result: Boid[] = [];
 		for (let i = 0; i < this.numBoids; i += 1) {
-			const origin: Position = [Math.random() * this.width, Math.random() * this.height];
+			const origin: Position = this.createBoidOrigin('grid', i);
 			result.push(
 				new Boid({
 					x: origin[0],
@@ -174,12 +202,6 @@ class Flock {
 		boid.dy += speed * Math.sin(radians);
 		boid.x = destinationX;
 		boid.y = destinationY;
-
-		boid.windiness = {
-			...boid.windiness,
-			speed,
-			dir: Math.round(dir + 1) % 360,
-		};
 	}
 
 	// Move away from other boids that are too close to avoid colliding
@@ -246,12 +268,23 @@ class Flock {
 	// Speed will naturally vary in flocking behavior, but real animals can't go
 	// arbitrarily fast.
 	limitSpeed(boid: Boid) {
-		const speedLimit = 15;
+		const speedLimit = 1;
 
 		const speed = Math.sqrt(boid.dx * boid.dx + boid.dy * boid.dy);
 		if (speed > speedLimit) {
 			boid.dx = (boid.dx / speed) * speedLimit;
 			boid.dy = (boid.dy / speed) * speedLimit;
+		}
+	}
+
+	// Limit range of movement to restrict flocking behavior
+	limitDistanceFromOrigin(boid: Boid) {
+		const maxDistance = 50;
+		const bounceFactor = 10;
+
+		if (distance(boid, { x: boid.origin[0], y: boid.origin[1] }) > maxDistance) {
+			boid.dx *= -1;
+			boid.dy *= -1;
 		}
 	}
 
@@ -270,18 +303,18 @@ class Flock {
 		ctx.fill();
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-		// if (this.trail) {
-		// 	ctx.strokeStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 2]);
-		// 	ctx.lineWidth = 5;
-		// 	ctx.beginPath();
-		// 	ctx.moveTo(boid.history[0][0], boid.history[0][1]);
-		// 	for (const point of boid.history) {
-		// 		ctx.lineTo(point[0], point[1]);
-		// 	}
-		// 	ctx.stroke();
-		// }
+		if (this.trails['path']) {
+			ctx.strokeStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 4]);
+			ctx.lineWidth = 5;
+			ctx.beginPath();
+			ctx.moveTo(boid.history[0][0], boid.history[0][1]);
+			for (const point of boid.history) {
+				ctx.lineTo(point[0], point[1]);
+			}
+			ctx.stroke();
+		}
 
-		if (true) {
+		if (this.trails['origin']) {
 			ctx.strokeStyle = COLORS[this.theme](angle, [0, (2 * Math.PI) / 4]);
 			ctx.lineWidth = 5;
 			ctx.lineCap = 'round';
@@ -312,12 +345,13 @@ class Flock {
 				// Update the velocities according to each rule
 				// this.flyTowardsCenter(boid, this.obstacle);
 				this.flyTowardsCenter(boid);
-				this.floatInWind(boid);
+				// this.floatInWind(boid);
 				this.avoidOthers(boid);
 				this.avoidSprite(boid);
 				this.matchVelocity(boid);
-				this.limitSpeed(boid);
 				this.keepWithinBounds(boid);
+				this.limitSpeed(boid);
+				this.limitDistanceFromOrigin(boid);
 
 				// Update the position based on the current velocity
 				boid.x += boid.dx;

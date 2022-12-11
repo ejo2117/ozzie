@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import SpriteField from './Field';
-import { COLORS, ingestCSV } from './utils';
+import { COLORS, fetchAndNormalizeWeatherData, ingestCSV, TRAILS } from './utils';
 import Flock from '@lib/boids/Flock';
 
 type CanvasProps = JSX.IntrinsicElements['canvas'] & {};
@@ -17,8 +17,9 @@ const sizeCanvas = canvas => {
 	canvas.height = height;
 };
 
-const Canvas = props => {
+const Canvas = ({ weather = null }) => {
 	const canvasRef = useRef<HTMLCanvasElement>();
+	const flockRef = useRef<Flock>();
 	const animationIdRef = useRef<number>();
 
 	useEffect(() => {
@@ -33,28 +34,21 @@ const Canvas = props => {
 				);
 				sizeCanvas(canvasRef.current);
 				const points = await ingestCSV();
-				// new SpriteField({
-				// 	canvas: canvasRef.current,
-				// 	data: points,
-				// 	width: 950,
-				// 	theme: 'red',
-				// 	bpm: 120,
-				// });
-				const flock = new Flock({
+				// const points = weather;
+				flockRef.current = new Flock({
 					bpm: 125,
 					context: canvasRef.current.getContext('2d'),
 					height: canvasRef.current.height,
-					numBoids: 50,
+					numBoids: 80,
 					points,
 					theme: 'rainbow',
 					trail: true,
+					trails: { origin: true },
 					visualRange: 75,
 					width: canvasRef.current.width,
 				});
 
-				animationIdRef.current = flock.animationId;
-
-				// window.requestAnimationFrame(() => flock.animate());
+				animationIdRef.current = flockRef.current.animationId;
 			}
 		};
 		setup();
@@ -72,16 +66,20 @@ const Canvas = props => {
 							{key}
 						</option>
 					))}
-					{/* <option value='rainbow'>Rainbow</option>
-					<option value='blackwhite'>Black & White</option>
-					<option value='furnace'>Furnace</option>
-					<option value='red'>Red</option>
-					<option value='mint'>Mint</option>
-					<option value='prep'>Prep</option> */}
 				</select>
-				<input type={'number'} defaultValue={120} placeholder='BPM'></input>
-				<input id='trails' type={'checkbox'}></input>
-				<label htmlFor='trails'>Show Trails?</label>
+				<select name='trails'>
+					{Object.keys(TRAILS).map(key => (
+						<option value={key} key={key}>
+							{key}
+						</option>
+					))}
+				</select>
+				<label htmlFor='margin'></label>
+				<input type='range' id='margin' min={0} max={10} step={0.1} />
+				<input id='trail' type={'checkbox'}></input>
+				<label htmlFor='trail'>Show Trails?</label>
+				<input id='sprite' type={'checkbox'}></input>
+				<label htmlFor='sprite'>Show Sprite?</label>
 			</section>
 			<canvas ref={canvasRef}></canvas>
 		</>
