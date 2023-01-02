@@ -13,6 +13,8 @@ export type NormalizedWindPoint = WindPoint & {
 /** Point (x, y) in 2D space */
 export type Position = [number, number];
 
+export type Position3D = [number, number, number];
+
 export type ExcludeMethods<T> = Pick<
 	T,
 	{

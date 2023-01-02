@@ -34,18 +34,19 @@ const Canvas = ({ weather = null }) => {
 				);
 				sizeCanvas(canvasRef.current);
 				const points = await ingestCSV();
-				// const points = weather;
+
 				flockRef.current = new Flock({
 					bpm: 125,
 					context: canvasRef.current.getContext('2d'),
 					height: canvasRef.current.height,
-					numBoids: 80,
+					numBoids: 50,
 					points,
 					theme: 'rainbow',
 					trail: true,
-					trails: { origin: true },
+					trails: { origin: false, path: false },
 					visualRange: 75,
 					width: canvasRef.current.width,
+					weather: weather?.points,
 				});
 
 				animationIdRef.current = flockRef.current.animationId;
@@ -68,7 +69,7 @@ const Canvas = ({ weather = null }) => {
 					))}
 				</select>
 				<select name='trails'>
-					{Object.keys(TRAILS).map(key => (
+					{TRAILS.map(key => (
 						<option value={key} key={key}>
 							{key}
 						</option>

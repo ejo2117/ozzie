@@ -12,7 +12,7 @@ import { fetchAndNormalizeWeatherData } from '../components/Screen/utils';
 
 // basic commit
 const Home: NextPage = ({ weather }: InferGetStaticPropsType<typeof getStaticProps>) => {
-	// console.log('WEATHER: ', weather);
+	console.log('WEATHER: ', weather);
 
 	return (
 		<div className={styles.container}>
@@ -37,11 +37,11 @@ const Home: NextPage = ({ weather }: InferGetStaticPropsType<typeof getStaticPro
 };
 export async function getStaticProps(context) {
 	// console.log('SERVER');
-	// const weather = await fetchAndNormalizeWeatherData();
+	const weather = await fetchAndNormalizeWeatherData();
 
 	return {
 		props: {
-			// weather,
+			weather,
 		}, // will be passed to the page component as props
 	};
 }

@@ -7,8 +7,6 @@ import Controller from '../../components/Screen/Controller';
 import { randomInt } from '../../utils/math';
 const DRAW_TRAIL = false;
 
-const BOUNDS_MARGIN = 32;
-
 function distance(boid1, boid2) {
 	return Math.sqrt((boid1.x - boid2.x) * (boid1.x - boid2.x) + (boid1.y - boid2.y) * (boid1.y - boid2.y));
 }
@@ -18,7 +16,7 @@ function distance(boid1, boid2) {
 // The key difference between the Flock/Boid and the Field/Sprite relationship
 // is that our Flock controls movement for each Boid, since movement requires an awareness of other Boids,
 // whereas each Sprite is responsible for its own movement behavior
-class Flock {
+class Flock3D {
 	context: CanvasRenderingContext2D;
 	boids: Boid[];
 	numBoids: number;
@@ -37,7 +35,6 @@ class Flock {
 
 	points: NormalizedWindPoint[];
 	trails: any;
-	weather: any;
 
 	constructor({
 		bpm,
@@ -50,8 +47,7 @@ class Flock {
 		trails,
 		visualRange,
 		width,
-		weather,
-	}: Omit<ExcludeMethods<Flock>, 'boids' | 'foci' | 'animationId' | 'controller' | 'obstacle' | 'lastUpdate'>) {
+	}: Omit<ExcludeMethods<Flock3D>, 'boids' | 'foci' | 'animationId' | 'controller' | 'obstacle' | 'lastUpdate'>) {
 		this.trails = trail && trails;
 		this.points = points;
 		this.numBoids = numBoids;
@@ -62,7 +58,6 @@ class Flock {
 		this.theme = theme;
 		this.bpm = bpm;
 		this.lastUpdate = performance.now();
-		this.weather = weather;
 
 		this.foci = this.initFoci();
 		this.obstacle = this.foci.previousPosition;
@@ -106,7 +101,7 @@ class Flock {
 		const { width, height } = this;
 		console.log(width, height);
 
-		const margin = 50;
+		const margin = 200;
 
 		const xAxis = Array(Math.floor(width / margin))
 			.fill(null)
@@ -115,7 +110,7 @@ class Flock {
 			.fill(null)
 			.map((_, i) => i * margin);
 
-		const pointsWithinBounds = xAxis.flatMap(x => yAxis.map(y => [x + 8, y + 8] as Position));
+		const pointsWithinBounds = xAxis.flatMap(x => yAxis.map(y => [x, y] as Position));
 
 		const types = {
 			random: [Math.random() * width, Math.random() * height] as Position,
@@ -129,7 +124,7 @@ class Flock {
 	initBoids() {
 		const result: Boid[] = [];
 		for (let i = 0; i < this.numBoids; i += 1) {
-			const origin: Position = this.createBoidOrigin('random', i);
+			const origin: Position = this.createBoidOrigin('grid', i);
 			result.push(
 				new Boid({
 					x: origin[0],
@@ -165,14 +160,6 @@ class Flock {
 		}
 	}
 
-	// Wraparound
-	ignoreBounds(boid: Boid) {
-		if (boid.x < -BOUNDS_MARGIN) boid.x = this.width + BOUNDS_MARGIN;
-		if (boid.y < -BOUNDS_MARGIN) boid.y = this.height + BOUNDS_MARGIN;
-		if (boid.x > this.width + BOUNDS_MARGIN) boid.x = -BOUNDS_MARGIN;
-		if (boid.y > this.height + BOUNDS_MARGIN) boid.y = -BOUNDS_MARGIN;
-	}
-
 	// Find the center of mass of the other boids and adjust velocity slightly to
 	// point towards the center of mass.
 	flyTowardsCenter(boid: Boid, center?: Position) {
@@ -202,7 +189,7 @@ class Flock {
 	}
 
 	// Adjust velocity based on Wind
-	floatInWind(boid: Boid, t: number) {
+	floatInWind(boid: Boid) {
 		const { speed, dir } = boid.windiness;
 		const centeringFactor = 0.001; // adjust velocity by this %
 
@@ -215,12 +202,6 @@ class Flock {
 		boid.dy += speed * Math.sin(radians);
 		boid.x = destinationX;
 		boid.y = destinationY;
-
-		boid.windiness = {
-			...boid.windiness,
-			speed: this.weather.speed[t % this.weather.speed.length],
-			dir: this.weather.dir[t % this.weather.dir.length],
-		};
 	}
 
 	// Move away from other boids that are too close to avoid colliding
@@ -243,19 +224,17 @@ class Flock {
 	}
 
 	// Move away from an obstacle that has its own movement behavior
-	avoidSprite(boid: Boid, focalPoint?: Sprite, attract = false) {
+	avoidSprite(boid: Boid, focalPoint?: Sprite) {
 		const obstacle = this.obstacle ?? [this.width / 2, this.height / 2];
 		const minDistance = 75;
 		const avoidFactor = 1;
-
-		let moveX = attract ? obstacle[0] : 0;
-		let moveY = attract ? obstacle[1] : 0;
+		let moveX = 0;
+		let moveY = 0;
 
 		if (distance(boid, { x: obstacle[0], y: obstacle[1] }) < minDistance) {
 			moveX += boid.x - obstacle[0];
 			moveY += boid.y - obstacle[1];
 		}
-
 		boid.dx += moveX * avoidFactor;
 		boid.dy += moveY * avoidFactor;
 	}
@@ -289,7 +268,7 @@ class Flock {
 	// Speed will naturally vary in flocking behavior, but real animals can't go
 	// arbitrarily fast.
 	limitSpeed(boid: Boid) {
-		const speedLimit = 15;
+		const speedLimit = 1;
 
 		const speed = Math.sqrt(boid.dx * boid.dx + boid.dy * boid.dy);
 		if (speed > speedLimit) {
@@ -300,7 +279,7 @@ class Flock {
 
 	// Limit range of movement to restrict flocking behavior
 	limitDistanceFromOrigin(boid: Boid) {
-		const maxDistance = 200;
+		const maxDistance = 50;
 		const bounceFactor = 10;
 
 		if (distance(boid, { x: boid.origin[0], y: boid.origin[1] }) > maxDistance) {
@@ -352,10 +331,9 @@ class Flock {
 	animate() {
 		if (this) {
 			const now = performance.now();
-			const elapsed = Math.floor((now - this.lastUpdate) / 1000);
 
 			// Check time, and randomly update theme, etc. every 45 seconds
-			if (elapsed > 45) {
+			if ((now - this.lastUpdate) / 1000 > 45) {
 				this.theme = randomFromArray(Object.keys(COLORS).filter(t => t !== this.theme));
 				// this.trail = !!randomInt(0, 1);
 				this.refreshSprites();
@@ -367,14 +345,13 @@ class Flock {
 				// Update the velocities according to each rule
 				// this.flyTowardsCenter(boid, this.obstacle);
 				this.flyTowardsCenter(boid);
-				this.floatInWind(boid, elapsed);
+				// this.floatInWind(boid);
 				this.avoidOthers(boid);
-				this.avoidSprite(boid, null, false);
+				this.avoidSprite(boid);
 				this.matchVelocity(boid);
-				// this.keepWithinBounds(boid);
-				this.ignoreBounds(boid);
+				this.keepWithinBounds(boid);
 				this.limitSpeed(boid);
-				// this.limitDistanceFromOrigin(boid);
+				this.limitDistanceFromOrigin(boid);
 
 				// Update the position based on the current velocity
 				boid.x += boid.dx;
@@ -426,4 +403,4 @@ class Flock {
 	}
 }
 
-export default Flock;
+export default Flock3D;

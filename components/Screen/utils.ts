@@ -14,17 +14,14 @@ const COLORS = {
 	rainbow: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateRainbow)(x),
 	blackwhite: (x: number, range: [number, number]) =>
 		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('white', 'black'))(x),
-	furnace: (x: number, range: [number, number]) =>
-		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#233D4D', '#FE7F2D'))(x),
+	furnace: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateHsl('#233D4D', '#FE7F2D'))(x),
 	red: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#DE9151', '#F34213'))(x),
 	mint: (x: number, range: [number, number]) =>
 		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#040403', '#9DDBAD'))(x),
 	prep: (x: number, range: [number, number]) =>
 		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#2EC0F9', '#A63A50'))(x),
-	cougar: (x: number, range: [number, number]) =>
-		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#FB8B24', '#D90368'))(x),
-	rose: (x: number, range: [number, number]) =>
-		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#FDE8E9', '#E3BAC6'))(x),
+	cougar: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateHsl('#FB8B24', '#D90368'))(x),
+	rose: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateHsl('#FDE8E9', '#E3BAC6'))(x),
 };
 
 const TRAILS = ['path', 'origin'];
@@ -63,16 +60,14 @@ const fetchAndNormalizeWeatherData = async () => {
 			'api-key': process.env.NEXT_PUBLIC_OIKOLAB_WEATHER_API,
 		}
 	);
-	console.log('RESPONSE OK');
-
-	const points = [];
-
+	const points = { speed: [], dir: [] };
 	for (let i = 0; i < data.data.length; i++) {
 		const point = data.data[i];
-		points.push(point);
+		points['speed'].push(point[4]);
+		points['dir'].push(point[5]);
 	}
 
-	return { ...data, points };
+	return { points };
 };
 
 /** Gets boundaries for the 2D plane contianing the projected data */
