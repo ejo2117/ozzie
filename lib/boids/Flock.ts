@@ -1,9 +1,9 @@
 import { ExcludeMethods, NormalizedWindPoint, Position, WindPoint } from '../types';
-import { COLORS, getBeatAlignment, randomFromArray, randomLissajousArgs } from '@components/Screen/screen__utils';
+import { COLORS, getBeatAlignment, randomFromArray, randomLissajousArgs } from '@utils/screen';
 import Boid from './Boid';
 import React from 'react';
-import Sprite from '@components/Screen/Sprite';
-import Controller from '@components/Screen/Controller';
+import { Sprite } from '@lib/sprites';
+import Controller from '@lib/Controller';
 import { randomInt } from '@utils/math';
 const DRAW_TRAIL = false;
 
@@ -15,9 +15,7 @@ function distance(boid1, boid2) {
 
 // Implements Ben Eater's boids as an ES6 Class.
 //
-// The key difference between the Flock/Boid and the Field/Sprite relationship
-// is that our Flock controls movement for each Boid, since movement requires an awareness of other Boids,
-// whereas each Sprite is responsible for its own movement behavior
+
 class Flock {
 	context: CanvasRenderingContext2D;
 	boids: Boid[];

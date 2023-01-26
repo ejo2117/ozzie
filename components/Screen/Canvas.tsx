@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
-import SpriteField from './SpriteField';
+import { SpriteField } from '@lib/sprites';
 import { COLORS, fetchAndNormalizeWeatherData, ingestCSV, TRAILS } from '@utils/screen';
 import Flock from '@lib/boids/Flock';
 
