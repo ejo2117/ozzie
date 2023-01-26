@@ -1,5 +1,5 @@
 import { NormalizedWindPoint } from '@lib/types';
-import { fetchAndNormalizeWeatherData, ingestCSV } from '@components/Screen/screen__utils';
+import { fetchAndNormalizeWeatherData, ingestCSV } from '@utils/screen';
 import { WeatherRequestParams } from './get-weather';
 import * as THREE from 'three';
 

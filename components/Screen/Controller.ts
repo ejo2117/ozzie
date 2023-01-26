@@ -1,8 +1,8 @@
 import Flock from '@lib/boids/Flock';
 import { ExcludeMethods } from '@lib/types';
-import SpriteField from './Field';
+import SpriteField from './SpriteField';
 import Sprite from './Sprite';
-import { COLORS, TRAILS } from './screen__utils';
+import { COLORS, TRAILS } from '@utils/screen';
 
 class Controller {
 	field: Flock;
