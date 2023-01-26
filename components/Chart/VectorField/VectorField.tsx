@@ -3,9 +3,9 @@
 import type { GeoProjection } from 'd3';
 import { FC, useCallback, useEffect, useRef } from 'react';
 
-import useHasMounted from '../../../hooks/useHasMounted';
+import useHasMounted from '@hooks/useHasMounted';
 
-import { randomInt, PI } from '../../../utils/math';
+import { randomInt, PI } from '@utils/math';
 
 import styles from '../Chart.module.scss';
 

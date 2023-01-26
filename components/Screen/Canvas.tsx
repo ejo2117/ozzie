@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import SpriteField from './Field';
-import { COLORS, fetchAndNormalizeWeatherData, ingestCSV, TRAILS } from './utils';
+import { COLORS, fetchAndNormalizeWeatherData, ingestCSV, TRAILS } from './screen__utils';
 import Flock from '@lib/boids/Flock';
 
 type CanvasProps = JSX.IntrinsicElements['canvas'] & {};

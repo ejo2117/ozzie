@@ -2,7 +2,7 @@ import { NormalizedWindPoint, WindPoint } from '@lib/types';
 import getWeather from '@lib/weather/get-weather';
 import * as d3 from 'd3';
 import { GeoGeometryObjects, json } from 'd3';
-import { randomArbitrary, randomInt, randomlyNegative } from '../../utils/math';
+import { randomArbitrary, randomInt, randomlyNegative } from '@utils/math';
 
 /*-- CONSTANTS --*/
 

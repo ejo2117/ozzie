@@ -1,10 +1,10 @@
 import { ExcludeMethods, NormalizedWindPoint, Position, WindPoint } from '../types';
-import { COLORS, getBeatAlignment, randomFromArray, randomLissajousArgs } from '../../components/Screen/utils';
+import { COLORS, getBeatAlignment, randomFromArray, randomLissajousArgs } from '@components/Screen/screen__utils';
 import Boid from './Boid';
 import React from 'react';
-import Sprite from '../../components/Screen/Sprite';
-import Controller from '../../components/Screen/Controller';
-import { randomInt } from '../../utils/math';
+import Sprite from '@components/Screen/Sprite';
+import Controller from '@components/Screen/Controller';
+import { randomInt } from '@utils/math';
 const DRAW_TRAIL = false;
 
 const BOUNDS_MARGIN = 32;

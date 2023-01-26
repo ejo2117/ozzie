@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import Sprite from './Sprite';
-import { Position } from '@lib/types';
 
 const getUserTheme = () => {
 	if (typeof document === 'undefined') {

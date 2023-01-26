@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import * as d3 from 'd3';
+import { useEffect, useRef, useState } from 'react';
 import Sprite, { FieldConfig } from './Sprite';
-import { NormalizedWindPoint, Position } from '@lib/types';
-import { getProjectionBounds, getUserTheme, ingestCSV, randomLissajousArgs, scaleContextForData } from './utils';
-import { randomArbitrary, randomInt } from '../../utils/math';
+import { NormalizedWindPoint } from '@lib/types';
+import { getProjectionBounds, getUserTheme, ingestCSV, randomLissajousArgs, scaleContextForData } from './screen__utils';
 
 const Field = () => {
 	// TODO - Make these stateful for config via UI.

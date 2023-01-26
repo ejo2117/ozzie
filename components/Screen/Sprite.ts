@@ -1,6 +1,6 @@
 import { Position } from '@lib/types';
-import { randomInt } from '../../utils/math';
-import { COLORS, getBeatAlignment, scaleContextForData } from './utils';
+import { randomInt } from '@utils/math';
+import { COLORS, getBeatAlignment, scaleContextForData } from './screen__utils';
 
 type TemporalPoint = [Position, number];
 
