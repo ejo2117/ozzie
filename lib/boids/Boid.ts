@@ -1,4 +1,4 @@
-import { Position } from '@lib/types';
+import { NormalizedWindPoint, Position } from '@lib/types';
 
 class Boid {
 	x: number;
@@ -6,12 +6,16 @@ class Boid {
 	dx: number;
 	dy: number;
 	history: Position[];
-	constructor({ x, y, dx, dy, history }: Boid) {
+	origin: Position;
+	windiness: NormalizedWindPoint;
+	constructor({ x, y, dx, dy, history, origin, windiness }: Boid) {
 		this.x = x;
 		this.y = y;
 		this.dx = dx;
 		this.dy = dy;
 		this.history = history;
+		this.origin = origin;
+		this.windiness = windiness;
 	}
 }
 

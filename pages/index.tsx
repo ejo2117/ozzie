@@ -1,15 +1,11 @@
-import type { NextPage } from 'next';
+import type { InferGetStaticPropsType, NextPage } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
-import Chart from '../components/Chart/Chart';
-import Canvas from '../components/Screen/Canvas';
-import Field from '../components/Screen/Field';
-import Sticker from '../components/Sticker';
-import styles from '../styles/Home.module.css';
+import Canvas from '@components/Screen/Canvas';
+import styles from '@styles/Home.module.css';
 import React from 'react';
+import fs from 'fs';
 
-// basic commit
-const Home: NextPage = () => {
+const Home: NextPage = ({ weather }: InferGetStaticPropsType<typeof getStaticProps>) => {
 	return (
 		<div className={styles.container}>
 			<Head>
@@ -25,11 +21,19 @@ const Home: NextPage = () => {
 			</Head>
 
 			<main className={styles.main}>
-				<Sticker />
-				<Canvas />
+				<Canvas weather={weather} />
 			</main>
 		</div>
 	);
 };
+export async function getStaticProps(context) {
+	const weather = JSON.parse(fs.readFileSync(process.env.SAMPLE_DATA_FILE, 'utf-8'));
+
+	return {
+		props: {
+			weather,
+		}, // will be passed to the page component as props
+	};
+}
 
 export default Home;

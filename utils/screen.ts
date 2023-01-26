@@ -1,7 +1,8 @@
 import { NormalizedWindPoint, WindPoint } from '@lib/types';
+import getWeather from '@lib/weather/get-weather';
 import * as d3 from 'd3';
-import { GeoGeometryObjects } from 'd3';
-import { randomArbitrary, randomInt, randomlyNegative } from '../../utils/math';
+import { GeoGeometryObjects, json } from 'd3';
+import { randomArbitrary, randomInt, randomlyNegative } from '@utils/math';
 
 /*-- CONSTANTS --*/
 
@@ -13,18 +14,17 @@ const COLORS = {
 	rainbow: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateRainbow)(x),
 	blackwhite: (x: number, range: [number, number]) =>
 		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('white', 'black'))(x),
-	furnace: (x: number, range: [number, number]) =>
-		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#233D4D', '#FE7F2D'))(x),
+	furnace: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateHsl('#233D4D', '#FE7F2D'))(x),
 	red: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#DE9151', '#F34213'))(x),
 	mint: (x: number, range: [number, number]) =>
 		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#040403', '#9DDBAD'))(x),
 	prep: (x: number, range: [number, number]) =>
 		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#2EC0F9', '#A63A50'))(x),
-	cougar: (x: number, range: [number, number]) =>
-		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#FB8B24', '#D90368'))(x),
-	rose: (x: number, range: [number, number]) =>
-		d3.scaleSequential(range, d3.interpolateRgb.gamma(0.5)('#FDE8E9', '#E3BAC6'))(x),
+	cougar: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateHsl('#FB8B24', '#D90368'))(x),
+	rose: (x: number, range: [number, number]) => d3.scaleSequential(range, d3.interpolateHsl('#FDE8E9', '#E3BAC6'))(x),
 };
+
+const TRAILS = ['path', 'origin'];
 
 /*-- FUNCTIONS --*/
 
@@ -44,6 +44,30 @@ const ingestCSV = async (pathToFile = './wind.csv') => {
 		return result;
 	}, [] as WindPoint[]);
 	return normalizePoints(parsed);
+};
+
+/** Ingests Wind Data from [Oikolab API](https://docs.oikolab.com/#1-introduction) */
+const fetchAndNormalizeWeatherData = async () => {
+	const { data } = await getWeather(
+		{
+			param: ['wind_speed', 'wind_direction'],
+		},
+		{
+			'start': '2022-12-01',
+			'end': '2022-12-10',
+			'lat': (41.878113).toString(),
+			'lon': (-87.629799).toString(),
+			'api-key': process.env.NEXT_PUBLIC_OIKOLAB_WEATHER_API,
+		}
+	);
+	const points = { speed: [], dir: [] };
+	for (let i = 0; i < data.data.length; i++) {
+		const point = data.data[i];
+		points['speed'].push(point[4]);
+		points['dir'].push(point[5]);
+	}
+
+	return { points };
 };
 
 /** Gets boundaries for the 2D plane contianing the projected data */
@@ -108,13 +132,15 @@ const randomLissajousArgs = (maxWidth: number, maxHeight: number, tx: number, ty
 const randomFromArray = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
 
 export {
-	randomLissajousArgs,
-	randomFromArray,
-	getUserTheme,
-	scaleContextForData,
 	COLORS,
+	TRAILS,
+	fetchAndNormalizeWeatherData,
 	getBeatAlignment,
 	getProjectionBounds,
+	getUserTheme,
 	ingestCSV,
 	normalizePoints,
+	randomFromArray,
+	randomLissajousArgs,
+	scaleContextForData,
 };

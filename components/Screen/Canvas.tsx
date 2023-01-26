@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
-import SpriteField from './Field';
-import { COLORS, ingestCSV } from './utils';
+import { SpriteField } from '@lib/sprites';
+import { COLORS, fetchAndNormalizeWeatherData, ingestCSV, TRAILS } from '@utils/screen';
 import Flock from '@lib/boids/Flock';
 
 type CanvasProps = JSX.IntrinsicElements['canvas'] & {};
@@ -17,8 +17,9 @@ const sizeCanvas = canvas => {
 	canvas.height = height;
 };
 
-const Canvas = props => {
+const Canvas = ({ weather = null }) => {
 	const canvasRef = useRef<HTMLCanvasElement>();
+	const flockRef = useRef<Flock>();
 	const animationIdRef = useRef<number>();
 
 	useEffect(() => {
@@ -32,28 +33,23 @@ const Canvas = props => {
 					false
 				);
 				sizeCanvas(canvasRef.current);
-				// const points = await ingestCSV();
-				// new SpriteField({
-				// 	canvas: canvasRef.current,
-				// 	data: points,
-				// 	width: 950,
-				// 	theme: 'red',
-				// 	bpm: 120,
-				// });
-				const flock = new Flock({
-					context: canvasRef.current.getContext('2d'),
-					numBoids: 100,
-					visualRange: 75,
-					trail: false,
-					width: canvasRef.current.width,
-					height: canvasRef.current.height,
-					theme: 'rainbow',
+				const points = await ingestCSV();
+
+				flockRef.current = new Flock({
 					bpm: 125,
+					context: canvasRef.current.getContext('2d'),
+					height: canvasRef.current.height,
+					numBoids: 50,
+					points,
+					theme: 'rainbow',
+					trail: true,
+					trails: { origin: false, path: false },
+					visualRange: 75,
+					width: canvasRef.current.width,
+					weather: weather?.points,
 				});
 
-				animationIdRef.current = flock.animationId;
-
-				// window.requestAnimationFrame(() => flock.animate());
+				animationIdRef.current = flockRef.current.animationId;
 			}
 		};
 		setup();
@@ -63,21 +59,28 @@ const Canvas = props => {
 
 	return (
 		<>
-			<button id='openControls' style={{ display: 'none' }}>
-				Controls
-			</button>
+			<button id='openControls'>Controls</button>
 			<section id='controls' data-visible='false'>
 				<select name='theme'>
-					<option value='rainbow'>Rainbow</option>
-					<option value='blackwhite'>Black & White</option>
-					<option value='furnace'>Furnace</option>
-					<option value='red'>Red</option>
-					<option value='mint'>Mint</option>
-					<option value='prep'>Prep</option>
+					{Object.keys(COLORS).map(key => (
+						<option value={key} key={key}>
+							{key}
+						</option>
+					))}
 				</select>
-				<input type={'number'} defaultValue={120} placeholder='BPM'></input>
-				<input id='trails' type={'checkbox'}></input>
-				<label htmlFor='trails'>Show Trails?</label>
+				<select name='trails'>
+					{TRAILS.map(key => (
+						<option value={key} key={key}>
+							{key}
+						</option>
+					))}
+				</select>
+				<label htmlFor='margin'></label>
+				<input type='range' id='margin' min={0} max={10} step={0.1} />
+				<input id='trail' type={'checkbox'}></input>
+				<label htmlFor='trail'>Show Trails?</label>
+				<input id='sprite' type={'checkbox'}></input>
+				<label htmlFor='sprite'>Show Sprite?</label>
 			</section>
 			<canvas ref={canvasRef}></canvas>
 		</>

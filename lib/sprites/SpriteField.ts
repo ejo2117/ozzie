@@ -1,8 +1,8 @@
-import { NormalizedWindPoint } from '../../lib/types';
-import { randomInt } from '../../utils/math';
-import Controller from './Controller';
+import { NormalizedWindPoint } from '@lib/types';
+import { randomInt } from '@utils/math';
+import Controller from '../../lib/Controller';
 import Sprite from './Sprite';
-import { COLORS, getProjectionBounds, getUserTheme, ingestCSV, randomLissajousArgs, scaleContextForData } from './utils';
+import { COLORS, getProjectionBounds, getUserTheme, ingestCSV, randomLissajousArgs, scaleContextForData } from '@utils/screen';
 
 type FieldConfig = {
 	width: number;

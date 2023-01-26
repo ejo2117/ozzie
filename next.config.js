@@ -12,10 +12,14 @@ const nextConfig = {
 		let configCopy = { ...config };
 		configCopy.resolve.alias = {
 			...config.resolve.alias,
-			'@lib': path.resolve('./lib')
-		}
-		return configCopy
-	}
+			'@lib': path.resolve('./lib'),
+			'@components': path.resolve('./components'),
+			'@utils': path.resolve('./utils'),
+			'@styles': path.resolve('./styles'),
+			'@hooks': path.resolve('./hooks'),
+		};
+		return configCopy;
+	},
 };
 
 module.exports = nextConfig;
